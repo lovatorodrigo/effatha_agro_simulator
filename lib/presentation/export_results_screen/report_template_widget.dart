@@ -75,14 +75,14 @@ class ReportTemplateWidget extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 _card(theme, isDark, 'Profitability Analysis', [
                   _row('Investment (Total)', traditional['investmentTotal'] ?? '-', effatha['investmentTotal'] ?? '-'),
                   _row('Production (Total)', traditional['productionTotal'] ?? '-', effatha['productionTotal'] ?? '-'),
                   _row('Profitability', traditional['profitabilityPercent'] ?? '0%', effatha['profitabilityPercent'] ?? '0%'),
                   _row('ROI', traditional['roi'] ?? '0%', effatha['roi'] ?? '0%'),
                 ]),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 _card(theme, isDark, 'Additional Profit with Effatha', [
                   _row('Additional Profit', '', effatha['additionalProfit'] ?? r'$ 0,00'),
                   _row('vs Traditional', '', effatha['additionalProfitPercent'] ?? '0%'),
@@ -118,7 +118,7 @@ class ReportTemplateWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           ...rows,
         ],
       ),

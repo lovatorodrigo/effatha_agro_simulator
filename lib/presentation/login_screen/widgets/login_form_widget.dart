@@ -97,17 +97,17 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
             Container(
               decoration: BoxDecoration(
                 color: (isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight)
-                    .withValues(alpha: 0.85),
+                    .withOpacity(0.85),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-                      .withValues(alpha: 0.2),
+                      .withOpacity(0.2),
                   width: 1.0,
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: (isDark ? AppTheme.shadowDark : AppTheme.shadowLight)
-                        .withValues(alpha: 0.1),
+                        .withOpacity(0.1),
                     blurRadius: 10.0,
                     offset: const Offset(0, 4),
                   ),
@@ -157,17 +157,17 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
             Container(
               decoration: BoxDecoration(
                 color: (isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight)
-                    .withValues(alpha: 0.85),
+                    .withOpacity(0.85),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-                      .withValues(alpha: 0.2),
+                      .withOpacity(0.2),
                   width: 1.0,
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: (isDark ? AppTheme.shadowDark : AppTheme.shadowLight)
-                        .withValues(alpha: 0.1),
+                        .withOpacity(0.1),
                     blurRadius: 10.0,
                     offset: const Offset(0, 4),
                   ),
@@ -273,7 +273,7 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                   disabledBackgroundColor: (isDark
                           ? AppTheme.textSecondaryDark
                           : AppTheme.textSecondaryLight)
-                      .withValues(alpha: 0.3),
+                      .withOpacity(0.3),
                   elevation: _isFormValid ? 2.0 : 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),

@@ -71,7 +71,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const EffathaLogoWidget.small(),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Flexible(
             child: Text(
               title,
@@ -146,7 +146,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           shadows: [
             Shadow(
               color:
-                  (isDark ? Colors.black : Colors.white).withValues(alpha: 0.8),
+                  (isDark ? Colors.black : Colors.white).withOpacity(0.8),
               offset: const Offset(0, 1),
               blurRadius: 2.0,
             ),

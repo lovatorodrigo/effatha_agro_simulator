@@ -347,7 +347,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 4.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: TabBar(
@@ -482,7 +482,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 _calculateResults();
               },
               units: const [r'$/ha', r'$/acre', 'sacks/ha', 'sacks/acre'],
-              onUnitChanged: (u) { setState(() { _costUnit = u; }); _calculateResults(); },
+              onUnitChanged: (u) { setState(() { _costUnit = u; }); _calculateResults(); },); _calculateResults(); },
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
               ],
@@ -591,11 +591,11 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             width: double.infinity,
             padding: EdgeInsets.all(4.w),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.9),
+              color: Colors.white.withOpacity(0.9),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: Colors.black.withOpacity(0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -699,11 +699,11 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             width: double.infinity,
             padding: EdgeInsets.all(4.w),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.9),
+              color: Colors.white.withOpacity(0.9),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: Colors.black.withOpacity(0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),

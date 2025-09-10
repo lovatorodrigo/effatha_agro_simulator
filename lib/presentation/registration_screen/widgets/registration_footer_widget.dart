@@ -54,11 +54,11 @@ class RegistrationFooterWidget extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
             decoration: BoxDecoration(
               color: (isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight)
-                  .withValues(alpha: 0.5),
+                  .withOpacity(0.5),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-                    .withValues(alpha: 0.2),
+                    .withOpacity(0.2),
               ),
             ),
             child: Column(
@@ -106,7 +106,7 @@ class RegistrationFooterWidget extends StatelessWidget {
               color: (isDark
                       ? AppTheme.textSecondaryDark
                       : AppTheme.textSecondaryLight)
-                  .withValues(alpha: 0.7),
+                  .withOpacity(0.7),
               fontSize: 10.sp,
             ),
             textAlign: TextAlign.center,

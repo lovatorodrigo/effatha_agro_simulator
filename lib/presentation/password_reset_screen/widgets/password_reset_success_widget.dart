@@ -74,17 +74,17 @@ class _PasswordResetSuccessWidgetState
       padding: EdgeInsets.all(6.w),
       decoration: BoxDecoration(
         color: (isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight)
-            .withValues(alpha: 0.85),
+            .withOpacity(0.85),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-              .withValues(alpha: 0.2),
+              .withOpacity(0.2),
           width: 1.0,
         ),
         boxShadow: [
           BoxShadow(
             color: (isDark ? AppTheme.shadowDark : AppTheme.shadowLight)
-                .withValues(alpha: 0.1),
+                .withOpacity(0.1),
             blurRadius: 10.0,
             offset: const Offset(0, 4),
           ),
@@ -98,10 +98,10 @@ class _PasswordResetSuccessWidgetState
             width: 20.w,
             height: 20.w,
             decoration: BoxDecoration(
-              color: AppTheme.successLight.withValues(alpha: 0.1),
+              color: AppTheme.successLight.withOpacity(0.1),
               shape: BoxShape.circle,
               border: Border.all(
-                color: AppTheme.successLight.withValues(alpha: 0.3),
+                color: AppTheme.successLight.withOpacity(0.3),
                 width: 2,
               ),
             ),
@@ -173,11 +173,11 @@ class _PasswordResetSuccessWidgetState
             decoration: BoxDecoration(
               color:
                   (isDark ? AppTheme.backgroundDark : AppTheme.backgroundLight)
-                      .withValues(alpha: 0.5),
+                      .withOpacity(0.5),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-                    .withValues(alpha: 0.2),
+                    .withOpacity(0.2),
               ),
             ),
             child: Column(

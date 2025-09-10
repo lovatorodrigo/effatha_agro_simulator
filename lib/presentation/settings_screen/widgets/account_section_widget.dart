@@ -28,7 +28,7 @@ class AccountSectionWidget extends StatelessWidget {
               height: 6.h,
               decoration: BoxDecoration(
                 color: (isDark ? AppTheme.primaryDark : AppTheme.primaryLight)
-                    .withValues(alpha: 0.1),
+                    .withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Center(
@@ -56,7 +56,7 @@ class AccountSectionWidget extends StatelessWidget {
           ),
           Divider(
             color: (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-                .withValues(alpha: 0.3),
+                .withOpacity(0.3),
             height: 1,
           ),
           ListTile(

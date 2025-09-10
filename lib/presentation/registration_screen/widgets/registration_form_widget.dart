@@ -134,17 +134,17 @@ class _RegistrationFormWidgetState extends State<RegistrationFormWidget> {
       constraints: BoxConstraints(maxWidth: 400),
       decoration: BoxDecoration(
         color: (isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight)
-            .withValues(alpha: 0.85),
+            .withOpacity(0.85),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-              .withValues(alpha: 0.2),
+              .withOpacity(0.2),
           width: 1.0,
         ),
         boxShadow: [
           BoxShadow(
             color: (isDark ? AppTheme.shadowDark : AppTheme.shadowLight)
-                .withValues(alpha: 0.1),
+                .withOpacity(0.1),
             blurRadius: 20.0,
             offset: const Offset(0, 8),
           ),
@@ -277,13 +277,13 @@ class _RegistrationFormWidgetState extends State<RegistrationFormWidget> {
                           color: (isDark
                                   ? AppTheme.warningDark
                                   : AppTheme.warningLight)
-                              .withValues(alpha: 0.1),
+                              .withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: (isDark
                                     ? AppTheme.warningDark
                                     : AppTheme.warningLight)
-                                .withValues(alpha: 0.3),
+                                .withOpacity(0.3),
                           ),
                         ),
                         child: Column(

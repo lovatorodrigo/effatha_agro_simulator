@@ -228,11 +228,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           width: 25.w,
                           height: 25.w,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: Colors.white.withOpacity(0.9),
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
+                                color: Colors.black.withOpacity(0.2),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -259,7 +259,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             fontWeight: FontWeight.bold,
                             shadows: [
                               Shadow(
-                                color: Colors.black.withValues(alpha: 0.5),
+                                color: Colors.black.withOpacity(0.5),
                                 offset: const Offset(0, 2),
                                 blurRadius: 4,
                               ),
@@ -272,10 +272,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         Text(
                           'Start optimizing your agricultural profitability with advanced simulation tools',
                           style: theme.textTheme.bodyLarge?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: Colors.white.withOpacity(0.9),
                             shadows: [
                               Shadow(
-                                color: Colors.black.withValues(alpha: 0.5),
+                                color: Colors.black.withOpacity(0.5),
                                 offset: const Offset(0, 1),
                                 blurRadius: 2,
                               ),
@@ -292,11 +292,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             constraints: BoxConstraints(maxWidth: 400),
                             padding: EdgeInsets.all(3.w),
                             decoration: BoxDecoration(
-                              color: AppTheme.errorLight.withValues(alpha: 0.1),
+                              color: AppTheme.errorLight.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color:
-                                    AppTheme.errorLight.withValues(alpha: 0.3),
+                                    AppTheme.errorLight.withOpacity(0.3),
                               ),
                             ),
                             child: Row(

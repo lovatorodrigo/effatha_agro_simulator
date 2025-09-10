@@ -32,7 +32,7 @@ class CustomErrorWidget extends StatelessWidget {
                 height: 42,
                 width: 42,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
                 "Something went wrong",
                 style: const TextStyle(
@@ -41,7 +41,7 @@ class CustomErrorWidget extends StatelessWidget {
                   color: Color(0xFF262626),
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               SizedBox(
                 child: const Text(
                   'We encountered an unexpected error while processing your request.',
@@ -52,7 +52,7 @@ class CustomErrorWidget extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: () {
                   bool canBeBack = Navigator.canPop(context);

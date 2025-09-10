@@ -33,7 +33,7 @@ class SocialLoginWidget extends StatelessWidget {
                 child: Container(
                   height: 1,
                   color: (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-                      .withValues(alpha: 0.3),
+                      .withOpacity(0.3),
                 ),
               ),
               Padding(
@@ -53,7 +53,7 @@ class SocialLoginWidget extends StatelessWidget {
                 child: Container(
                   height: 1,
                   color: (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-                      .withValues(alpha: 0.3),
+                      .withOpacity(0.3),
                 ),
               ),
             ],
@@ -72,8 +72,8 @@ class SocialLoginWidget extends StatelessWidget {
                   onPressed: isLoading ? null : onGoogleSignIn,
                   style: OutlinedButton.styleFrom(
                     backgroundColor: isDark
-                        ? AppTheme.surfaceDark.withValues(alpha: 0.8)
-                        : AppTheme.surfaceLight.withValues(alpha: 0.9),
+                        ? AppTheme.surfaceDark.withOpacity(0.8)
+                        : AppTheme.surfaceLight.withOpacity(0.9),
                     foregroundColor: isDark
                         ? AppTheme.textPrimaryDark
                         : AppTheme.textPrimaryLight,
@@ -81,7 +81,7 @@ class SocialLoginWidget extends StatelessWidget {
                       color: (isDark
                               ? AppTheme.dividerDark
                               : AppTheme.dividerLight)
-                          .withValues(alpha: 0.3),
+                          .withOpacity(0.3),
                       width: 1.0,
                     ),
                     shape: RoundedRectangleBorder(
@@ -125,8 +125,8 @@ class SocialLoginWidget extends StatelessWidget {
                     onPressed: isLoading ? null : onAppleSignIn,
                     style: OutlinedButton.styleFrom(
                       backgroundColor: isDark
-                          ? AppTheme.surfaceDark.withValues(alpha: 0.8)
-                          : AppTheme.surfaceLight.withValues(alpha: 0.9),
+                          ? AppTheme.surfaceDark.withOpacity(0.8)
+                          : AppTheme.surfaceLight.withOpacity(0.9),
                       foregroundColor: isDark
                           ? AppTheme.textPrimaryDark
                           : AppTheme.textPrimaryLight,
@@ -134,7 +134,7 @@ class SocialLoginWidget extends StatelessWidget {
                         color: (isDark
                                 ? AppTheme.dividerDark
                                 : AppTheme.dividerLight)
-                            .withValues(alpha: 0.3),
+                            .withOpacity(0.3),
                         width: 1.0,
                       ),
                       shape: RoundedRectangleBorder(

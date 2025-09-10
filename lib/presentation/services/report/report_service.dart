@@ -1,3 +1,4 @@
+
 import 'dart:typed_data';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/intl.dart';
@@ -7,9 +8,9 @@ import 'package:pdf/widgets.dart' as pw;
 class SimulationReportData {
   final Map<String, dynamic> traditional;
   final Map<String, dynamic> effatha;
-  final String cropKey;
-  final String areaUnit;
-  final String productivityUnit;
+  final String cropKey; // 'soy','corn','cotton','sugarcane','wheat','coffee','orange'
+  final String areaUnit; // e.g. 'hectares' or 'acres'
+  final String productivityUnit; // e.g. 'kg/ha','t/ha','sacks/ha', etc.
   final double kgPerSack;
   final String locale;
 

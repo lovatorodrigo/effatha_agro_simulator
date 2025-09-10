@@ -205,11 +205,11 @@ class AppTheme {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide(color: dividerLight.withValues(alpha: 0.5)),
+        borderSide: BorderSide(color: dividerLight.withOpacity(0.5)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide(color: dividerLight.withValues(alpha: 0.5)),
+        borderSide: BorderSide(color: dividerLight.withOpacity(0.5)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
@@ -248,7 +248,7 @@ class AppTheme {
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return primaryLight.withValues(alpha: 0.5);
+          return primaryLight.withOpacity(0.5);
         }
         return null;
       }),
@@ -281,8 +281,8 @@ class AppTheme {
     sliderTheme: SliderThemeData(
       activeTrackColor: primaryLight,
       thumbColor: primaryLight,
-      overlayColor: primaryLight.withValues(alpha: 0.2),
-      inactiveTrackColor: primaryLight.withValues(alpha: 0.3),
+      overlayColor: primaryLight.withOpacity(0.2),
+      inactiveTrackColor: primaryLight.withOpacity(0.3),
       valueIndicatorColor: primaryLight,
       valueIndicatorTextStyle: GoogleFonts.robotoMono(
         color: onPrimaryLight,
@@ -292,7 +292,7 @@ class AppTheme {
     ),
     tabBarTheme: TabBarTheme(
       labelColor: onPrimaryLight,
-      unselectedLabelColor: onPrimaryLight.withValues(alpha: 0.7),
+      unselectedLabelColor: onPrimaryLight.withOpacity(0.7),
       indicatorColor: onPrimaryLight,
       indicatorSize: TabBarIndicatorSize.tab,
       labelStyle: GoogleFonts.roboto(
@@ -308,7 +308,7 @@ class AppTheme {
     ),
     tooltipTheme: TooltipThemeData(
       decoration: BoxDecoration(
-        color: onSurfaceLight.withValues(alpha: 0.9),
+        color: onSurfaceLight.withOpacity(0.9),
         borderRadius: BorderRadius.circular(4),
       ),
       textStyle: GoogleFonts.roboto(
@@ -476,11 +476,11 @@ class AppTheme {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide(color: dividerDark.withValues(alpha: 0.5)),
+        borderSide: BorderSide(color: dividerDark.withOpacity(0.5)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide(color: dividerDark.withValues(alpha: 0.5)),
+        borderSide: BorderSide(color: dividerDark.withOpacity(0.5)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
@@ -519,7 +519,7 @@ class AppTheme {
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return primaryDark.withValues(alpha: 0.5);
+          return primaryDark.withOpacity(0.5);
         }
         return null;
       }),
@@ -552,8 +552,8 @@ class AppTheme {
     sliderTheme: SliderThemeData(
       activeTrackColor: primaryDark,
       thumbColor: primaryDark,
-      overlayColor: primaryDark.withValues(alpha: 0.2),
-      inactiveTrackColor: primaryDark.withValues(alpha: 0.3),
+      overlayColor: primaryDark.withOpacity(0.2),
+      inactiveTrackColor: primaryDark.withOpacity(0.3),
       valueIndicatorColor: primaryDark,
       valueIndicatorTextStyle: GoogleFonts.robotoMono(
         color: onPrimaryDark,
@@ -579,7 +579,7 @@ class AppTheme {
     ),
     tooltipTheme: TooltipThemeData(
       decoration: BoxDecoration(
-        color: onSurfaceDark.withValues(alpha: 0.9),
+        color: onSurfaceDark.withOpacity(0.9),
         borderRadius: BorderRadius.circular(4),
       ),
       textStyle: GoogleFonts.roboto(
@@ -743,12 +743,12 @@ class AppTheme {
       color: (isLight ? surfaceLight : surfaceDark).withValues(alpha: opacity),
       borderRadius: BorderRadius.circular(12.0),
       border: Border.all(
-        color: (isLight ? dividerLight : dividerDark).withValues(alpha: 0.2),
+        color: (isLight ? dividerLight : dividerDark).withOpacity(0.2),
         width: 1.0,
       ),
       boxShadow: [
         BoxShadow(
-          color: (isLight ? shadowLight : shadowDark).withValues(alpha: 0.1),
+          color: (isLight ? shadowLight : shadowDark).withOpacity(0.1),
           blurRadius: 10.0,
           offset: const Offset(0, 4),
         ),

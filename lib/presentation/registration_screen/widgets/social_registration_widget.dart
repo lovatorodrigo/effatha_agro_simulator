@@ -31,7 +31,7 @@ class SocialRegistrationWidget extends StatelessWidget {
               Expanded(
                 child: Divider(
                   color: (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-                      .withValues(alpha: 0.5),
+                      .withOpacity(0.5),
                   thickness: 1,
                 ),
               ),
@@ -50,7 +50,7 @@ class SocialRegistrationWidget extends StatelessWidget {
               Expanded(
                 child: Divider(
                   color: (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-                      .withValues(alpha: 0.5),
+                      .withOpacity(0.5),
                   thickness: 1,
                 ),
               ),
@@ -69,7 +69,7 @@ class SocialRegistrationWidget extends StatelessWidget {
             textColor:
                 isDark ? AppTheme.textPrimaryDark : AppTheme.textPrimaryLight,
             borderColor: (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-                .withValues(alpha: 0.3),
+                .withOpacity(0.3),
           ),
 
           // Apple Sign Up Button (iOS only)

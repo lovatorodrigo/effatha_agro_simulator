@@ -108,7 +108,7 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(

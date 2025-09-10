@@ -118,13 +118,13 @@ class EffathaLogoWidget extends StatelessWidget {
       logoImage = Container(
         decoration: BoxDecoration(
           color: isDark
-              ? Colors.white.withValues(alpha: 0.95)
-              : Colors.white.withValues(alpha: 0.9),
+              ? Colors.white.withOpacity(0.95)
+              : Colors.white.withOpacity(0.9),
           borderRadius: BorderRadius.circular(16),
           boxShadow: showShadow
               ? [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: Colors.black.withOpacity(0.1),
                     blurRadius: 8.0,
                     offset: const Offset(0, 4),
                   ),
@@ -132,7 +132,7 @@ class EffathaLogoWidget extends StatelessWidget {
               : null,
           border: isDark
               ? Border.all(
-                  color: Colors.grey.withValues(alpha: 0.3),
+                  color: Colors.grey.withOpacity(0.3),
                   width: 1,
                 )
               : null,

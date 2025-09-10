@@ -31,16 +31,16 @@ class ProgressIndicatorWidget extends StatelessWidget {
       padding: EdgeInsets.all(4.w),
       decoration: BoxDecoration(
         color: (isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight)
-            .withValues(alpha: 0.85),
+            .withOpacity(0.85),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-              .withValues(alpha: 0.2),
+              .withOpacity(0.2),
         ),
         boxShadow: [
           BoxShadow(
             color: (isDark ? AppTheme.shadowDark : AppTheme.shadowLight)
-                .withValues(alpha: 0.1),
+                .withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -82,7 +82,7 @@ class ProgressIndicatorWidget extends StatelessWidget {
               value: progress,
               backgroundColor:
                   (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-                      .withValues(alpha: 0.3),
+                      .withOpacity(0.3),
               valueColor: AlwaysStoppedAnimation<Color>(
                 progressColor ??
                     (isDark ? AppTheme.primaryDark : AppTheme.primaryLight),

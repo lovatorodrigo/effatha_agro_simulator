@@ -64,7 +64,7 @@ class _ExchangeRateWidgetState extends State<ExchangeRateWidget> {
               height: 6.h,
               decoration: BoxDecoration(
                 color: (isDark ? AppTheme.primaryDark : AppTheme.primaryLight)
-                    .withValues(alpha: 0.1),
+                    .withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Center(
@@ -99,7 +99,7 @@ class _ExchangeRateWidgetState extends State<ExchangeRateWidget> {
           if (widget.isManualMode) ...[
             Divider(
               color: (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-                  .withValues(alpha: 0.3),
+                  .withOpacity(0.3),
               height: 1,
             ),
             Padding(
@@ -175,7 +175,7 @@ class _ExchangeRateWidgetState extends State<ExchangeRateWidget> {
                       color: (isDark
                               ? AppTheme.dividerDark
                               : AppTheme.dividerLight)
-                          .withValues(alpha: 0.5),
+                          .withOpacity(0.5),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(

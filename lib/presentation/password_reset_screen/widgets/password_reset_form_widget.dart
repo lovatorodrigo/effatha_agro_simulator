@@ -78,17 +78,17 @@ class _PasswordResetFormWidgetState extends State<PasswordResetFormWidget> {
       padding: EdgeInsets.all(6.w),
       decoration: BoxDecoration(
         color: (isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight)
-            .withValues(alpha: 0.85),
+            .withOpacity(0.85),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-              .withValues(alpha: 0.2),
+              .withOpacity(0.2),
           width: 1.0,
         ),
         boxShadow: [
           BoxShadow(
             color: (isDark ? AppTheme.shadowDark : AppTheme.shadowLight)
-                .withValues(alpha: 0.1),
+                .withOpacity(0.1),
             blurRadius: 10.0,
             offset: const Offset(0, 4),
           ),
@@ -163,7 +163,7 @@ class _PasswordResetFormWidgetState extends State<PasswordResetFormWidget> {
                   borderSide: BorderSide(
                     color:
                         (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-                            .withValues(alpha: 0.5),
+                            .withOpacity(0.5),
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
@@ -171,7 +171,7 @@ class _PasswordResetFormWidgetState extends State<PasswordResetFormWidget> {
                   borderSide: BorderSide(
                     color:
                         (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-                            .withValues(alpha: 0.5),
+                            .withOpacity(0.5),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
@@ -211,11 +211,11 @@ class _PasswordResetFormWidgetState extends State<PasswordResetFormWidget> {
                 padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.h),
                 decoration: BoxDecoration(
                   color: (isDark ? AppTheme.errorDark : AppTheme.errorLight)
-                      .withValues(alpha: 0.1),
+                      .withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: (isDark ? AppTheme.errorDark : AppTheme.errorLight)
-                        .withValues(alpha: 0.3),
+                        .withOpacity(0.3),
                   ),
                 ),
                 child: Row(
@@ -256,7 +256,7 @@ class _PasswordResetFormWidgetState extends State<PasswordResetFormWidget> {
                   disabledBackgroundColor: (isDark
                           ? AppTheme.textSecondaryDark
                           : AppTheme.textSecondaryLight)
-                      .withValues(alpha: 0.3),
+                      .withOpacity(0.3),
                   elevation: widget.isLoading ? 0 : 2,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

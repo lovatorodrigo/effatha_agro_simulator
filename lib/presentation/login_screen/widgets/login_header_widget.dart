@@ -36,7 +36,7 @@ class LoginHeaderWidget extends StatelessWidget {
               fontSize: 28,
               shadows: [
                 Shadow(
-                  color: Colors.black.withValues(alpha: 0.8),
+                  color: Colors.black.withOpacity(0.8),
                   offset: const Offset(0, 2),
                   blurRadius: 4.0,
                 ),
@@ -51,12 +51,12 @@ class LoginHeaderWidget extends StatelessWidget {
           Text(
             'Sign in to access your agricultural profitability simulator',
             style: theme.textTheme.bodyLarge?.copyWith(
-              color: AppTheme.surfaceLight.withValues(alpha: 0.9),
+              color: AppTheme.surfaceLight.withOpacity(0.9),
               fontSize: 16,
               height: 1.4,
               shadows: [
                 Shadow(
-                  color: Colors.black.withValues(alpha: 0.8),
+                  color: Colors.black.withOpacity(0.8),
                   offset: const Offset(0, 1),
                   blurRadius: 2.0,
                 ),

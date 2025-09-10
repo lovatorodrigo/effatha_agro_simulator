@@ -69,7 +69,7 @@ class InputCardWidget extends StatelessWidget {
                       ? AppTheme.textSecondaryDark
                       : AppTheme.textSecondaryLight,
                 )),
-            const SizedBox(width: 6),
+            SizedBox(width: 6),
             const Icon(Icons.swap_vert, size: 16),
           ],
         ),

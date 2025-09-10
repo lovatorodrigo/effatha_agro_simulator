@@ -53,7 +53,7 @@ class ResultsSummaryWidget extends StatelessWidget {
           padding: EdgeInsets.symmetric(vertical: 0.8.h, horizontal: 2.w),
           decoration: BoxDecoration(
             color: (isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight)
-                .withValues(alpha: 0.6),
+                .withOpacity(0.6),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
@@ -140,11 +140,11 @@ class ResultsSummaryWidget extends StatelessWidget {
           padding: EdgeInsets.all(3.w),
           decoration: BoxDecoration(
             color: (isDark ? AppTheme.successDark : AppTheme.successLight)
-                .withValues(alpha: 0.1),
+                .withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: (isDark ? AppTheme.successDark : AppTheme.successLight)
-                  .withValues(alpha: 0.3),
+                  .withOpacity(0.3),
             ),
           ),
           child: Column(

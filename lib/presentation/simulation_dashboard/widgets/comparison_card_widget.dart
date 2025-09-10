@@ -34,13 +34,13 @@ class ComparisonCardWidget extends StatelessWidget {
       decoration: AppTheme.cardDecoration(isLight: !isDark).copyWith(
         border: Border.all(
           color: (isDark ? AppTheme.primaryDark : AppTheme.primaryLight)
-              .withValues(alpha: 0.2),
+              .withOpacity(0.2),
           width: isEffatha ? 2 : 1,
         ),
         boxShadow: [
           BoxShadow(
             color: (isDark ? AppTheme.shadowDark : AppTheme.shadowLight)
-                .withValues(alpha: 0.1),
+                .withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -74,7 +74,7 @@ class ComparisonCardWidget extends StatelessWidget {
                             (isDark
                                 ? AppTheme.primaryDark
                                 : AppTheme.primaryLight))
-                        .withValues(alpha: 0.12),
+                        .withOpacity(0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(

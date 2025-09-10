@@ -59,11 +59,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               margin: const EdgeInsets.only(bottom: 16),
                               decoration: BoxDecoration(
                                 color:
-                                    AppTheme.errorLight.withValues(alpha: 0.1),
+                                    AppTheme.errorLight.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: AppTheme.errorLight
-                                      .withValues(alpha: 0.3),
+                                      .withOpacity(0.3),
                                   width: 1.0,
                                 ),
                               ),
@@ -74,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     color: AppTheme.errorLight,
                                     size: 20,
                                   ),
-                                  const SizedBox(width: 12),
+                                  SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
                                       _errorMessage!,

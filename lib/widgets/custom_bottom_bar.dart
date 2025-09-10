@@ -76,12 +76,12 @@ class CustomBottomBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: (backgroundColor ??
                 (isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight))
-            .withValues(alpha: 0.95),
+            .withOpacity(0.95),
         borderRadius: BorderRadius.circular(24.0),
         boxShadow: [
           BoxShadow(
             color: (isDark ? AppTheme.shadowDark : AppTheme.shadowLight)
-                .withValues(alpha: 0.2),
+                .withOpacity(0.2),
             blurRadius: 12.0,
             offset: const Offset(0, 6),
           ),
@@ -124,7 +124,7 @@ class CustomBottomBar extends StatelessWidget {
         border: Border(
           top: BorderSide(
             color: (isDark ? AppTheme.dividerDark : AppTheme.dividerLight)
-                .withValues(alpha: 0.2),
+                .withOpacity(0.2),
             width: 1.0,
           ),
         ),
@@ -160,7 +160,7 @@ class CustomBottomBar extends StatelessWidget {
                               : AppTheme.textSecondaryLight),
                     ),
                     if (showLabels && item.label != null) ...[
-                      const SizedBox(height: 4.0),
+                      SizedBox(height: 4.0),
                       Text(
                         item.label!,
                         style: TextStyle(
