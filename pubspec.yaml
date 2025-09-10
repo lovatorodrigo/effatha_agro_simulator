@@ -17,6 +17,9 @@ dependencies:
 
   # UI / layout
   sizer: any
+  google_fonts: any
+  flutter_svg: any
+  cached_network_image: any
 
   # Storage
   shared_preferences: any
@@ -27,6 +30,9 @@ dependencies:
   printing: any
   share_plus: any
 
+  # Conectividade
+  connectivity_plus: any
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -34,8 +40,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-  # Necessário para gerar AppLocalizations (gen_l10n)
   generate: true
 
   assets:
