@@ -1,0 +1,19 @@
+﻿# Flutter/Dart
+.dart_tool/
+.packages
+.pub-cache/
+build/
+# IDE
+.idea/
+.vscode/
+*.iml
+# Plataformas
+android/local.properties
+ios/Flutter/Flutter.podspec
+# Credenciais e chaves (NÃO COMITAR)
+android/key.properties
+*.jks
+*.keystore
+# Artefatos de build
+*.aab
+*.apk

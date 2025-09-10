@@ -1,0 +1,43 @@
+name: effatha_agro_simulator
+description: Effatha Agro Simulator
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # i18n
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+
+  # UI / layout
+  sizer: any
+
+  # Storage
+  shared_preferences: any
+  path_provider: any
+
+  # Export / Share
+  pdf: any
+  printing: any
+  share_plus: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: any
+
+flutter:
+  uses-material-design: true
+
+  # Necessário para gerar AppLocalizations (gen_l10n)
+  generate: true
+
+  assets:
+    - assets/
+    - assets/images/
