@@ -149,7 +149,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     
     
     // Convert units to base (ha, kg/ha, $/ha)
-    double acresPerHectare = 2.47105;
+    const double acresPerHectare = 2.47105;
 
     // area in ha
     final double areaHa = _areaUnit == 'acres' ? (area / acresPerHectare) : area;
@@ -248,7 +248,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
           ),
         ),
         child: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -321,7 +321,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
                 shadows: [
-                  Shadow(
+                  const Shadow(
                     color: Colors.black54,
                     offset: Offset(0, 1),
                     blurRadius: 2,
@@ -352,7 +352,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
       ),
       child: TabBar(
         controller: _tabController,
-        tabs: [
+        tabs: const [
           Tab(text: 'Dashboard'),
           Tab(text: 'Settings'),
           Tab(text: 'Profile'),
@@ -369,7 +369,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   Widget _buildDashboardTab() {
     return RefreshIndicator(
       onRefresh: () async {
-        await Future.delayed(Duration(seconds: 1));
+        await Future.delayed(const Duration(seconds: 1));
         _calculateResults();
       },
       child: SingleChildScrollView(
@@ -392,7 +392,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
                 shadows: [
-                  Shadow(
+                  const Shadow(
                     color: Colors.black54,
                     offset: Offset(0, 1),
                     blurRadius: 2,
@@ -425,7 +425,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
                 shadows: [
-                  Shadow(
+                  const Shadow(
                     color: Colors.black54,
                     offset: Offset(0, 1),
                     blurRadius: 2,
@@ -438,7 +438,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               title: 'Area',
               value: _area,
               unit: _areaUnit,
-              units: ['hectares','acres'],
+              units: const ['hectares','acres'],
               onUnitChanged: (u) { setState(() { _areaUnit = u; }); _calculateResults(); },
               hintText: 'Enter area',
               onChanged: (value) {
@@ -456,7 +456,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               title: 'Historical Productivity',
               value: _historicalProductivity,
               unit: _productivityUnit,
-              units: ['sacks/ha','sacks/acre','t/ha','kg/ha'],
+              units: const ['sacks/ha','sacks/acre','t/ha','kg/ha'],
               onUnitChanged: (u) { setState(() { _productivityUnit = u; }); _calculateResults(); },); _calculateResults(); },
               hintText: 'Enter productivity',
               onChanged: (value) {
@@ -481,7 +481,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 });
                 _calculateResults();
               },
-              units: [r'$/ha', r'$/acre', 'sacks/ha', 'sacks/acre'],
+              units: const [r'$/ha', r'$/acre', 'sacks/ha', 'sacks/acre'],
               onUnitChanged: (u) { setState(() { _costUnit = u; }); _calculateResults(); },); _calculateResults(); },
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
@@ -499,7 +499,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 });
                 _calculateResults();
               },
-              units: [r'$/sack', r'$/kg', r'$/t'],
+              units: const [r'$/sack', r'$/kg', r'$/t'],
               onUnitChanged: (u) { setState(() { _priceUnit = u; }); _calculateResults(); },
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
@@ -517,7 +517,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 });
                 _calculateResults();
               },
-              units: [r'$/ha', r'$/acre', 'sacks/ha', 'sacks/acre'],
+              units: const [r'$/ha', r'$/acre', 'sacks/ha', 'sacks/acre'],
               onUnitChanged: (u) { setState(() { _investmentUnit = u; }); _calculateResults(); },); _calculateResults(); },
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
@@ -528,7 +528,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               title: 'Additional Productivity with Effatha',
               value: _additionalProductivity,
               unit: _additionalProductivityUnit,
-              units: ['sacks/ha','sacks/acre','t/ha','kg/ha'],
+              units: const ['sacks/ha','sacks/acre','t/ha','kg/ha'],
               onUnitChanged: (u) { setState(() { _additionalProductivityUnit = u; }); _calculateResults(); },); _calculateResults(); },
               hintText: 'Enter additional productivity',
               onChanged: (value) {
@@ -578,7 +578,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               fontWeight: FontWeight.w700,
               color: Colors.white,
               shadows: [
-                Shadow(
+                const Shadow(
                   color: Colors.black54,
                   offset: Offset(0, 1),
                   blurRadius: 2,
@@ -597,7 +597,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
                   blurRadius: 8,
-                  offset: Offset(0, 2),
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
@@ -618,11 +618,11 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                       _currency = value ?? 'USD';
                     });
                   },
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Currency',
                     border: OutlineInputBorder(),
                   ),
-                  items: [
+                  items: const [
                     DropdownMenuItem(
                         value: 'USD', child: Text('USD - US Dollar')),
                     DropdownMenuItem(
@@ -647,11 +647,11 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                       _areaUnit = value ?? 'hectares';
                     });
                   },
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Area Unit',
                     border: OutlineInputBorder(),
                   ),
-                  items: [
+                  items: const [
                     DropdownMenuItem(
                         value: 'hectares', child: Text('Hectares')),
                     DropdownMenuItem(value: 'acres', child: Text('Acres')),
@@ -662,7 +662,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 ElevatedButton(
                   onPressed: () =>
                       Navigator.pushNamed(context, '/settings-screen'),
-                  child: Text('Advanced Settings'),
+                  child: const Text('Advanced Settings'),
                 ),
               ],
             ),
@@ -686,7 +686,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               fontWeight: FontWeight.w700,
               color: Colors.white,
               shadows: [
-                Shadow(
+                const Shadow(
                   color: Colors.black54,
                   offset: Offset(0, 1),
                   blurRadius: 2,
@@ -705,7 +705,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
                   blurRadius: 8,
-                  offset: Offset(0, 2),
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
@@ -741,8 +741,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                     color: AppTheme.primaryLight,
                     size: 24,
                   ),
-                  title: Text('Simulations Run'),
-                  trailing: Text('24'),
+                  title: const Text('Simulations Run'),
+                  trailing: const Text('24'),
                 ),
                 ListTile(
                   leading: CustomIconWidget(
@@ -750,8 +750,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                     color: AppTheme.successLight,
                     size: 24,
                   ),
-                  title: Text('Average ROI'),
-                  trailing: Text('18.5%'),
+                  title: const Text('Average ROI'),
+                  trailing: const Text('18.5%'),
                 ),
                 ListTile(
                   leading: CustomIconWidget(
@@ -759,7 +759,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                     color: AppTheme.primaryLight,
                     size: 24,
                   ),
-                  title: Text('Preferred Crop'),
+                  title: const Text('Preferred Crop'),
                   trailing: Text(_selectedCrop.toUpperCase()),
                 ),
                 SizedBox(height: 2.h),
@@ -770,7 +770,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                     backgroundColor: AppTheme.errorLight,
                     foregroundColor: Colors.white,
                   ),
-                  child: Text('Logout'),
+                  child: const Text('Logout'),
                 ),
               ],
             ),
