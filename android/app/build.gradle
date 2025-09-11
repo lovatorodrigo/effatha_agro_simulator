@@ -23,12 +23,12 @@ android {
 
     buildTypes {
         debug {
-            // Não use shrinkResources sem minifyEnabled
+            // NÃO use shrinkResources sem minifyEnabled
             minifyEnabled false
             shrinkResources false
         }
         release {
-            // Para usar shrinkResources, é obrigatório habilitar o R8 (minifyEnabled)
+            // Para usar shrinkResources é obrigatório habilitar minify (R8)
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
@@ -46,6 +46,11 @@ android {
 }
 
 dependencies {
+    // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib:2.1.0"
-    // Outras dependências do app (se necessário)...
+
+    // AndroidX + Material (necessários pros temas usados no styles.xml)
+    implementation "androidx.core:core-ktx:1.13.1"
+    implementation "androidx.appcompat:appcompat:1.6.1"
+    implementation "com.google.android.material:material:1.11.0"
 }
