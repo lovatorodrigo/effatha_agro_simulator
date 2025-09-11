@@ -272,7 +272,7 @@ class ReportService {
         ),
         pw.Bullet(
           text:
-              'Internal calculations use SI standards (ha, kg/ha, $/kg, $/ha). Sack weight: ${data.kgPerSack.toStringAsFixed(0)} kg.',
+              'Internal calculations use SI standards (ha, kg/ha, \$/kg, \$/ha). Sack weight: ${data.kgPerSack.toStringAsFixed(0)} kg.',
         ),
       ],
     );
