@@ -1,4 +1,5 @@
-// android/build.gradle (root) — minimalista
+// android/build.gradle (root) — minimalista; sem plugins/repositories aqui!
+
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
