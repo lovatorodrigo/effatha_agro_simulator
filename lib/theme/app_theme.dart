@@ -43,24 +43,24 @@ class AppTheme {
   static const Color dialogDark = Color(0xFF2D2D2D);
 
   // Shadow colors optimized for outdoor visibility
-  static const Color shadowLight = Color(0x33000000); // 2-4dp shadows
-  static const Color shadowDark = Color(0x33FFFFFF);
+  static const Color shadowLight = Color(0x33000000); // 20% black
+  static const Color shadowDark = Color(0x33FFFFFF);  // 20% white
 
   // Divider colors
   static const Color dividerLight = Color(0x1F000000);
   static const Color dividerDark = Color(0x1FFFFFFF);
 
   // Text colors
-  static const Color textPrimaryLight = Color(0xFF212121); // AA accessibility compliance
-  static const Color textSecondaryLight = Color(0xFF757575); // Medium gray for supporting info
-  static const Color textDisabledLight = Color(0x61000000); // 38% opacity
+  static const Color textPrimaryLight = Color(0xFF212121);
+  static const Color textSecondaryLight = Color(0xFF757575);
+  static const Color textDisabledLight = Color(0x61000000);
 
   static const Color textPrimaryDark = Color(0xFFFFFFFF);
   static const Color textSecondaryDark = Color(0xFFB0B0B0);
   static const Color textDisabledDark = Color(0x61FFFFFF);
 
   // Overlay for background images
-  static const Color overlayLight = Color(0x99000000); // 60% opacity for text readability
+  static const Color overlayLight = Color(0x99000000);
   static const Color overlayDark = Color(0x99000000);
 
   /// Light theme optimized for outdoor agricultural use
@@ -113,7 +113,7 @@ class AppTheme {
         color: onPrimaryLight,
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: cardLight,
       elevation: 2.0,
       shadowColor: shadowLight,
@@ -204,17 +204,17 @@ class AppTheme {
         borderRadius: BorderRadius.circular(8.0),
         borderSide: BorderSide(color: dividerLight.withOpacity(0.5)),
       ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: const BorderSide(color: primaryLight, width: 2.0),
+      focusedBorder: const OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+        borderSide: BorderSide(color: primaryLight, width: 2.0),
       ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: const BorderSide(color: errorLight, width: 1.0),
+      errorBorder: const OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+        borderSide: BorderSide(color: errorLight, width: 1.0),
       ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: const BorderSide(color: errorLight, width: 2.0),
+      focusedErrorBorder: const OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+        borderSide: BorderSide(color: errorLight, width: 2.0),
       ),
       labelStyle: GoogleFonts.roboto(
         color: textSecondaryLight,
@@ -234,9 +234,7 @@ class AppTheme {
     ),
     switchTheme: SwitchThemeData(
       thumbColor: MaterialStateProperty.resolveWith((states) {
-        if (states.contains(MaterialState.selected)) {
-          return primaryLight;
-        }
+        if (states.contains(MaterialState.selected)) return primaryLight;
         return null;
       }),
       trackColor: MaterialStateProperty.resolveWith((states) {
@@ -248,21 +246,15 @@ class AppTheme {
     ),
     checkboxTheme: CheckboxThemeData(
       fillColor: MaterialStateProperty.resolveWith((states) {
-        if (states.contains(MaterialState.selected)) {
-          return primaryLight;
-        }
+        if (states.contains(MaterialState.selected)) return primaryLight;
         return null;
       }),
       checkColor: MaterialStateProperty.all(onPrimaryLight),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(2.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2.0)),
     ),
     radioTheme: RadioThemeData(
       fillColor: MaterialStateProperty.resolveWith((states) {
-        if (states.contains(MaterialState.selected)) {
-          return primaryLight;
-        }
+        if (states.contains(MaterialState.selected)) return primaryLight;
         return null;
       }),
     ),
@@ -321,9 +313,7 @@ class AppTheme {
       ),
       actionTextColor: secondaryLight,
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
       elevation: 6.0,
     ),
     bottomSheetTheme: const BottomSheetThemeData(
@@ -333,7 +323,7 @@ class AppTheme {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
       ),
     ),
-    dialogTheme: const DialogTheme(backgroundColor: dialogLight),
+    dialogTheme: const DialogThemeData(backgroundColor: dialogLight),
   );
 
   /// Dark theme for low-light agricultural environments
@@ -386,7 +376,7 @@ class AppTheme {
         color: onSurfaceDark,
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: cardDark,
       elevation: 2.0,
       shadowColor: shadowDark,
@@ -477,17 +467,17 @@ class AppTheme {
         borderRadius: BorderRadius.circular(8.0),
         borderSide: BorderSide(color: dividerDark.withOpacity(0.5)),
       ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: const BorderSide(color: primaryDark, width: 2.0),
+      focusedBorder: const OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+        borderSide: BorderSide(color: primaryDark, width: 2.0),
       ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: const BorderSide(color: errorDark, width: 1.0),
+      errorBorder: const OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+        borderSide: BorderSide(color: errorDark, width: 1.0),
       ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: const BorderSide(color: errorDark, width: 2.0),
+      focusedErrorBorder: const OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+        borderSide: BorderSide(color: errorDark, width: 2.0),
       ),
       labelStyle: GoogleFonts.roboto(
         color: textSecondaryDark,
@@ -507,9 +497,7 @@ class AppTheme {
     ),
     switchTheme: SwitchThemeData(
       thumbColor: MaterialStateProperty.resolveWith((states) {
-        if (states.contains(MaterialState.selected)) {
-          return primaryDark;
-        }
+        if (states.contains(MaterialState.selected)) return primaryDark;
         return null;
       }),
       trackColor: MaterialStateProperty.resolveWith((states) {
@@ -521,21 +509,15 @@ class AppTheme {
     ),
     checkboxTheme: CheckboxThemeData(
       fillColor: MaterialStateProperty.resolveWith((states) {
-        if (states.contains(MaterialState.selected)) {
-          return primaryDark;
-        }
+        if (states.contains(MaterialState.selected)) return primaryDark;
         return null;
       }),
       checkColor: MaterialStateProperty.all(onPrimaryDark),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(2.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2.0)),
     ),
     radioTheme: RadioThemeData(
       fillColor: MaterialStateProperty.resolveWith((states) {
-        if (states.contains(MaterialState.selected)) {
-          return primaryDark;
-        }
+        if (states.contains(MaterialState.selected)) return primaryDark;
         return null;
       }),
     ),
@@ -594,9 +576,7 @@ class AppTheme {
       ),
       actionTextColor: secondaryDark,
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
       elevation: 6.0,
     ),
     bottomSheetTheme: const BottomSheetThemeData(
@@ -606,17 +586,16 @@ class AppTheme {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
       ),
     ),
-    dialogTheme: const DialogTheme(backgroundColor: dialogDark),
+    dialogTheme: const DialogThemeData(backgroundColor: dialogDark),
   );
 
-  /// Helper method to build text theme optimized for agricultural professional interface
+  /// Helper method to build text theme
   static TextTheme _buildTextTheme({required bool isLight}) {
     final Color textPrimary = isLight ? textPrimaryLight : textPrimaryDark;
     final Color textSecondary = isLight ? textSecondaryLight : textSecondaryDark;
     final Color textDisabled = isLight ? textDisabledLight : textDisabledDark;
 
     return TextTheme(
-      // Display styles for large headings
       displayLarge: GoogleFonts.roboto(
         fontSize: 96,
         fontWeight: FontWeight.w300,
@@ -634,8 +613,6 @@ class AppTheme {
         fontWeight: FontWeight.w400,
         color: textPrimary,
       ),
-
-      // Headline styles for section titles
       headlineLarge: GoogleFonts.roboto(
         fontSize: 40,
         fontWeight: FontWeight.w500,
@@ -652,8 +629,6 @@ class AppTheme {
         fontWeight: FontWeight.w500,
         color: textPrimary,
       ),
-
-      // Title styles for calculation sections
       titleLarge: GoogleFonts.roboto(
         fontSize: 20,
         fontWeight: FontWeight.w500,
@@ -672,8 +647,6 @@ class AppTheme {
         color: textPrimary,
         letterSpacing: 0.1,
       ),
-
-      // Body styles for form instructions and content
       bodyLarge: GoogleFonts.roboto(
         fontSize: 16,
         fontWeight: FontWeight.w400,
@@ -692,8 +665,6 @@ class AppTheme {
         color: textSecondary,
         letterSpacing: 0.4,
       ),
-
-      // Label styles for buttons and form labels
       labelLarge: GoogleFonts.roboto(
         fontSize: 14,
         fontWeight: FontWeight.w500,
@@ -715,7 +686,7 @@ class AppTheme {
     );
   }
 
-  /// Monospace text style for numerical data and currency values
+  /// Monospace text style for numbers/currency
   static TextStyle monoTextStyle({
     required bool isLight,
     double fontSize = 14,
@@ -727,6 +698,29 @@ class AppTheme {
       fontWeight: fontWeight,
       color: textColor,
       letterSpacing: 0.25,
+    );
+  }
+
+  /// NEW: Default card decoration used in dashboard/input widgets
+  static BoxDecoration cardDecoration({
+    required bool isLight,
+    double opacity = 0.90,
+  }) {
+    final Color base = isLight ? surfaceLight : surfaceDark;
+    final Color borderC = (isLight ? dividerLight : dividerDark).withOpacity(0.2);
+    final Color shadowC = (isLight ? shadowLight : shadowDark).withOpacity(0.12);
+
+    return BoxDecoration(
+      color: base.withOpacity(opacity),
+      borderRadius: BorderRadius.circular(12.0),
+      border: Border.all(color: borderC, width: 1.0),
+      boxShadow: [
+        BoxShadow(
+          color: shadowC,
+          blurRadius: 10.0,
+          offset: const Offset(0, 4),
+        ),
+      ],
     );
   }
 
@@ -760,7 +754,7 @@ class AppTheme {
         end: Alignment.bottomCenter,
         colors: [
           Color(0x00000000), // Transparent at top
-          overlayLight, // 60% opacity at bottom
+          overlayLight,      // 60% opacity at bottom
         ],
         stops: [0.0, 1.0],
       ),
