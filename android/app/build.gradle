@@ -1,6 +1,7 @@
 plugins {
     id "com.android.application"
     id "org.jetbrains.kotlin.android"
+    // Plugin do Flutter para app Android
     id "dev.flutter.flutter-gradle-plugin"
 }
 
@@ -10,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId "com.effatha_agro_simulator.app"
-        minSdk 21
+        minSdk 23
         targetSdk 34
         versionCode 1
         versionName "1.0"
@@ -19,13 +20,16 @@ android {
 
     buildTypes {
         release {
-            // Ajuste se usar ProGuard/R8
             minifyEnabled false
             shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // ajuste o signingConfig quando for assinar de verdade
+            signingConfig signingConfigs.debug
+        }
+        debug {
         }
     }
 
-    // Java/Kotlin 17 (recomendado com AGP 8.x)
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -34,15 +38,13 @@ android {
         jvmTarget = "17"
     }
 
-    // (opcional) habilite viewBinding se quiser
-    // buildFeatures { viewBinding true }
+    packaging {
+        resources {
+            excludes += ["META-INF/AL2.0", "META-INF/LGPL2.1"]
+        }
+    }
 }
 
-// O plugin do Flutter injeta as dependências io.flutter.* automaticamente
 flutter {
     source '../..'
-}
-
-dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.24"
 }
