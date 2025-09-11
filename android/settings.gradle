@@ -1,42 +1,41 @@
-// settings.gradle — Gradle 8.x + AGP 8.6.x + Flutter (Groovy)
-
+// settings.gradle — precisa ser o PRIMEIRO bloco
 pluginManagement {
-    // Tenta pegar o SDK do Flutter do ambiente
-    def flutterSdkPath = System.getenv("FLUTTER_ROOT")
-
-    // Fallback: tenta local.properties (útil em dev local; no CI geralmente FLUTTER_ROOT já existe)
-    if (!flutterSdkPath) {
-        def props = new Properties()
-        def lp = new File(rootDir, "local.properties")
-        if (lp.exists()) {
-            lp.withInputStream { props.load(it) }
-            flutterSdkPath = props.getProperty("flutter.sdk")
-        }
-    }
-
-    if (!flutterSdkPath) {
-        throw new GradleException("Flutter SDK não encontrado. Defina FLUTTER_ROOT ou 'flutter.sdk' em android/local.properties.")
-    }
-
-    // Disponibiliza o plugin 'dev.flutter.flutter-gradle-plugin'
-    includeBuild("${flutterSdkPath}/packages/flutter_tools/gradle")
-
-    // Repositórios para resolver plugins (AGP, Kotlin, etc.)
     repositories {
+        // Plugins (AGP, Kotlin etc.)
         google()
         mavenCentral()
         gradlePluginPortal()
+        // Repositório do engine do Flutter hospedado no GCS (embedding, artifacts)
+        maven { url = uri("https://storage.googleapis.com/download.flutter.io") }
+    }
+    plugins {
+        // Versões dos plugins
+        id("com.android.application") version "8.6.0"
+        id("org.jetbrains.kotlin.android") version "1.9.24"
+        // NÃO declare versão para 'dev.flutter.flutter-gradle-plugin' aqui
+        // pois ele é fornecido via includeBuild abaixo
     }
 }
 
+// Localização do SDK do Flutter
+def flutterSdkPath = System.getenv("FLUTTER_HOME") ?: System.properties["flutter.sdk"]
+if (flutterSdkPath == null) {
+    throw new GradleException("Flutter SDK não encontrado. Defina FLUTTER_HOME ou 'flutter.sdk' no gradle.properties.")
+}
+
+// expõe o plugin 'dev.flutter.flutter-gradle-plugin' a partir do Flutter SDK
+includeBuild("${flutterSdkPath}/packages/flutter_tools/gradle")
+
+// Repositórios para dependências de TODOS os projetos
 dependencyResolutionManagement {
-    // Usa SOMENTE repositórios definidos neste arquivo
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         google()
         mavenCentral()
-        // Artefatos do engine do Flutter (AARs como x86_64_debug etc.)
+        // artifacts do Flutter (embedding etc.)
         maven { url = uri("https://storage.googleapis.com/download.flutter.io") }
+        // engine local do Flutter (fallback)
+        maven { url = uri("${flutterSdkPath}/bin/cache/artifacts/engine/android") }
     }
 }
 
