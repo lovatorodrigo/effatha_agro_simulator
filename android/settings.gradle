@@ -25,10 +25,11 @@ pluginManagement {
         maven { url = "https://storage.googleapis.com/download.flutter.io" }
     }
 
-    // **VERSÕES AQUI** — Kotlin 1.9.24 e AGP 8.6.0
+    // **VERSÕES AQUI**
     plugins {
-        id "com.android.application" version "8.6.0"
-        id "org.jetbrains.kotlin.android" version "1.9.24"
+        id "com.android.application" version "8.6.1"
+        id "com.android.library"     version "8.6.1"
+        id "org.jetbrains.kotlin.android" version "2.0.21"   // >= 2.0, estável com AGP 8.6.x
         // não defina versão para o loader; ele vem do includeBuild acima
     }
 }
