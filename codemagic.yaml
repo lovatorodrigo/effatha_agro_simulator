@@ -1,0 +1,33 @@
+workflows:
+  android_aab_release:
+    name: Android AAB (Flutter)
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      vars:
+        ANDROID_HOME: /usr/local/share/android-sdk
+    scripts:
+      - name: Install Android SDK 36 / Build-Tools
+        script: |
+          yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager "platforms;android-36" "build-tools;34.0.0"
+
+      - name: Write local.properties
+        script: |
+          echo "flutter.sdk=${FLUTTER_ROOT:-/Users/builder/programs/flutter}" > android/local.properties
+          echo "sdk.dir=${ANDROID_HOME:-/Users/builder/Library/Android/sdk}" >> android/local.properties
+
+      - name: Print gradle files (sanity check)
+        script: |
+          echo "=== android/settings.gradle ==="; cat android/settings.gradle || true
+          echo "=== android/app/build.gradle ==="; cat android/app/build.gradle || true
+          echo "=== android/local.properties ==="; cat android/local.properties || true
+          echo "=== gradle-wrapper.properties ==="; cat android/gradle/wrapper/gradle-wrapper.properties || true
+
+      - name: Flutter build AAB (release)
+        script: |
+          flutter clean
+          flutter pub get
+          flutter build appbundle --release
+
+    artifacts:
+      - build/app/outputs/bundle/release/*.aab
