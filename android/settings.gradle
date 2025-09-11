@@ -1,4 +1,4 @@
-// android/settings.gradle — mantenha pluginManagement como 1ª instrução
+// android/settings.gradle
 
 pluginManagement {
     // Descobre o caminho do Flutter SDK
@@ -14,35 +14,38 @@ pluginManagement {
     }
     if (!flutterSdkPath) {
         throw new GradleException(
-            "Flutter SDK path not found. Set 'flutter.sdk' em android/local.properties " +
-            "ou defina FLUTTER_HOME/FLUTTER_ROOT no ambiente."
+            "Flutter SDK path not found. Defina 'flutter.sdk' em android/local.properties " +
+            "ou a variável de ambiente FLUTTER_HOME/FLUTTER_ROOT."
         )
     }
 
+    // Esta linha é o segredo para o plugin do Flutter ser resolvido sem versão:
+    includeBuild("${flutterSdkPath}/packages/flutter_tools/gradle")
+
     repositories {
-        gradlePluginPortal()
+        // Ordem padrão OK
         google()
         mavenCentral()
-        // Repositório do plugin do Flutter
-        maven { url "${flutterSdkPath}/packages/flutter_tools/gradle" }
+        gradlePluginPortal()
     }
 
-    // Versões dos plugins base (AGP e Kotlin)
+    // Versões dos plugins base
     plugins {
         id("com.android.application") version "8.6.0" apply false
         id("com.android.library")     version "8.6.0" apply false
         id("org.jetbrains.kotlin.android") version "1.9.24" apply false
-        // Não precisa declarar o plugin do Flutter aqui; ele é resolvido pelo repositório acima
+        // NÃO declare o plugin do Flutter aqui – ele vem do includeBuild acima
     }
 }
 
+// Obs.: para evitar o erro de “prefer settings repositories…”, não
+// forçamos repositoriesMode aqui. Mantemos apenas os repositórios.
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         google()
         mavenCentral()
-        // adicione outros repos aqui se realmente precisar (ex.: jitpack)
-        // maven { url "https://jitpack.io" }
+        // Em alguns ambientes, este repositório ajuda a resolver artefatos do engine:
+        // maven { url "https://storage.googleapis.com/download.flutter.io" }
     }
 }
 
