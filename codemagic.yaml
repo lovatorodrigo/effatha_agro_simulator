@@ -1,95 +1,85 @@
 workflows:
-  android_apk:
-    name: Android APK (Debug)
+  android_apk_debug:
+    name: Android APK (debug split per ABI)
     max_build_duration: 60
-    instance_type: mac_mini_m2
-
     environment:
       flutter: stable
-      vars:
-        ANDROID_HOME: /usr/local/share/android-sdk
+      java: 21
+    cache:
+      cache_paths:
+        - $HOME/.pub-cache
+        - $HOME/.gradle/caches
+        - $HOME/.gradle/wrapper
 
     scripts:
-      # 1) Mostra arquivos-chave antes de qualquer coisa (debug)
-      - name: Show important project files
+      - name: Print versions
         script: |
-          echo "=== android/settings.gradle ==="
-          cat android/settings.gradle
-          echo "=== android/app/build.gradle ==="
-          cat android/app/build.gradle || true
-          echo "=== existing android/local.properties (if any) ==="
-          cat android/local.properties || true
+          flutter --version
+          java -version
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" || true
 
-      # 2) Gera um local.properties coerente com o ambiente do Codemagic
-      - name: Write local.properties (sdk.dir & flutter.sdk)
-        script: |
-          # Descobre FLUTTER_ROOT a partir do binário no PATH
-          FLUTTER_BIN="$(which flutter)"
-          FLUTTER_ROOT="$(dirname "$(dirname "$FLUTTER_BIN")")"
-          echo "Detected FLUTTER_ROOT=$FLUTTER_ROOT"
-          # Escreve local.properties
-          cat > android/local.properties <<EOF
-          sdk.dir=/usr/local/share/android-sdk
-          flutter.sdk=$FLUTTER_ROOT
-          EOF
-          echo "=== android/local.properties (new) ==="
-          cat android/local.properties
-
-      # 3) Aceita licenças e instala Platform 36 + Build-Tools 34 + NDK 26.1
-      - name: Accept licenses & install Android SDK/NDK
-        script: |
-          yes | "$ANDROID_HOME"/cmdline-tools/latest/bin/sdkmanager --licenses
-          yes | "$ANDROID_HOME"/cmdline-tools/latest/bin/sdkmanager \
-            "platforms;android-36" \
-            "build-tools;34.0.0" \
-            "platform-tools" \
-            "ndk;26.1.10909125"
-
-      # 4) Limpa caches que causam conflitos de versão do Kotlin/Gradle
-      - name: Clean Gradle/Kotlin caches
-        script: |
-          rm -rf ~/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin || true
-          rm -rf ~/.gradle/caches/transforms-* ~/.gradle/caches/jars-* || true
-          flutter clean
-
-      # 5) Dependências do Flutter
-      - name: Flutter pub get
-        script: flutter pub get
-
-      # 6) Build APK (debug) — split por ABI
-      - name: Build APK (debug split per ABI)
+      - name: Ensure Android SDK 36 (platform + build-tools 34)
         script: |
           set -euxo pipefail
-          flutter doctor -v
-          flutter build apk --debug --split-per-abi
-          echo "=== After flutter build, list outputs ==="
-          (ls -R build/app/outputs || true)
+          SDKMAN="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMAN" "platforms;android-36" "build-tools;34.0.0" || true
 
-          # Fallback: em raros casos, o Flutter muda o diretório de saída.
-          # Então buscamos .apk em qualquer pasta sob build/app/outputs.
-          mkdir -p build/artifacts
-          FOUND=$(find build/app/outputs -type f -name "*.apk" | wc -l | xargs)
-          if [ "$FOUND" -eq "0" ]; then
-            echo "Nenhum APK achado em build/app/outputs, rodando fallback Gradle assembleDebug..."
-            ./android/gradlew -p android :app:assembleDebug || ./gradlew :app:assembleDebug
-            echo "=== After gradle assembleDebug, list outputs ==="
-            (ls -R build/app/outputs || true)
+      - name: Flutter clean & pub get
+        script: |
+          flutter clean
+          flutter pub get
+
+      - name: Build APK (debug split per ABI)
+        script: |
+          #!/usr/bin/env bash
+
+          # NÃO usamos -e pra não abortar antes do fallback
+          set -uox pipefail
+
+          echo "=== TRY #1: flutter build apk --debug --split-per-abi ==="
+          if ! flutter build apk --debug --split-per-abi -v; then
+            echo "[WARN] flutter build retornou erro; vamos tentar fallback com Gradle..."
           fi
 
-          # Copia TODOS os APKs encontrados (arm64-v8a, armeabi-v7a, x86_64) para um diretório fixo
-          find build/app/outputs -type f -name "*.apk" -print -exec cp {} build/artifacts/ \;
+          echo "=== LISTANDO outputs do Flutter ==="
+          (ls -R build/app/outputs || true)
 
-          echo "=== Final artifacts ==="
+          mkdir -p build/artifacts
+
+          # Copia APKs do caminho padrão do Flutter
+          find build/app/outputs -type f -name "*.apk" -print -exec cp -v {} build/artifacts/ \; || true
+
+          # Se ainda não temos APKs, roda Gradle (fallback)
+          APK_COUNT=$(find build/artifacts -type f -name "*.apk" | wc -l | xargs)
+          if [ "$APK_COUNT" -eq "0" ]; then
+            echo "=== TRY #2: Gradle assembleDebug (fallback) ==="
+            if [ -x ./android/gradlew ]; then
+              ./android/gradlew -p android :app:assembleDebug --stacktrace --info || true
+            else
+              ./gradlew :app:assembleDebug --stacktrace --info || true
+            fi
+
+            echo "=== LISTANDO outputs do Gradle ==="
+            (ls -R android/app/build/outputs || true)
+
+            # Copia APKs gerados pelo Gradle
+            find android/app/build/outputs -type f -name "*.apk" -print -exec cp -v {} build/artifacts/ \; || true
+          fi
+
+          echo "=== FINAL artifacts ==="
           ls -l build/artifacts || true
+
+          FINAL_COUNT=$(find build/artifacts -type f -name "*.apk" | wc -l | xargs)
+          if [ "$FINAL_COUNT" -eq "0" ]; then
+            echo "::error ::Nenhum APK encontrado após Flutter e Gradle."
+            echo "----- build/app/outputs -----"
+            (ls -R build/app/outputs || true)
+            echo "----- android/app/build/outputs -----"
+            (ls -R android/app/build/outputs || true)
+            exit 1
+          fi
 
     artifacts:
       - build/artifacts/*.apk
-
-    publishing:
-      # opcional: notificar por e-mail
-      email:
-        recipients:
-          - seu-email@exemplo.com
-        notify:
-          success: true
-          failure: true
+      - android/app/build/outputs/**/*.apk
