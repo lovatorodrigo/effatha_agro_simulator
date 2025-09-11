@@ -8,8 +8,6 @@ plugins {
 
 android {
     namespace "com.effatha_agro_simulator.app"
-
-    // Use números explícitos para ficar independente das extensões do Flutter
     compileSdk 34
 
     defaultConfig {
@@ -24,17 +22,20 @@ android {
     }
 
     buildTypes {
-        release {
-            // Ajuste conforme necessidade (R8/Proguard)
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
         debug {
-            // configs de debug, se precisar
+            // Não use shrinkResources sem minifyEnabled
+            minifyEnabled false
+            shrinkResources false
+        }
+        release {
+            // Para usar shrinkResources, é obrigatório habilitar o R8 (minifyEnabled)
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                          'proguard-rules.pro'
         }
     }
 
-    // Java/Kotlin 17 é o recomendado com AGP 8.x
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -45,6 +46,6 @@ android {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.24"
-    // Outras dependências do seu app entram aqui, se houver
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:2.1.0"
+    // Outras dependências do app (se necessário)...
 }
