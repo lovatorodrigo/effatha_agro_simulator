@@ -6,9 +6,9 @@ import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/app_export.dart';
-import '../services/report/report_service.dart';   // <- caminho corrigido
+import '../services/report/report_service.dart';   // caminho correto
 import 'report_template_widget.dart';
-import '../services/report/report_capture.dart';  // <- caminho corrigido
+import '../services/report/report_capture.dart';  // caminho correto
 
 class SimulationExportArgs {
   final Map<String, dynamic> traditional;
@@ -89,7 +89,7 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
               canChangePageFormat: false,
               initialPageFormat: PdfPageFormat.a4,
               // build espera uma função (PdfPageFormat) => Future<Uint8List>
-              build: (fmt) => buildSimulationPdf(reportData), // <- sem ReportService.
+              build: (fmt) => ReportService.buildSimulationPdf(reportData),
             ),
           ),
           // Prévia PNG / área de captura
@@ -117,7 +117,7 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           // Compartilhar PDF
-          final bytes = await buildSimulationPdf(reportData); // <- sem ReportService.
+          final bytes = await ReportService.buildSimulationPdf(reportData);
           await Printing.sharePdf(
             bytes: bytes,
             filename: 'effatha_report_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.pdf',
