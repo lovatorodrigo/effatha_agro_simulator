@@ -1,56 +1,39 @@
 pluginManagement {
-    def flutterSdkPath = {
-        // 1) tenta local.properties
-        def p = new Properties()
-        def lp = new File(settingsDir, "local.properties")
-        if (lp.exists()) {
-            lp.withReader('UTF-8') { r -> p.load(r) }
-            def sdk = p.getProperty("flutter.sdk")
-            if (sdk != null) return sdk
+    // Descobre o caminho do Flutter SDK (via FLUTTER_SDK ou local.properties)
+    def flutterSdkPath = System.getenv("FLUTTER_SDK")
+    if (flutterSdkPath == null || flutterSdkPath.isEmpty()) {
+        def props = new Properties()
+        def f = new File(rootDir, "local.properties")
+        if (f.exists()) {
+            f.withInputStream { props.load(it) }
+            flutterSdkPath = props.getProperty("flutter.sdk")
         }
-        // 2) fallback para variável de ambiente (Codemagic usa /Users/builder/programs/flutter)
-        return System.getenv("FLUTTER_SDK")
-    }.call()
+    }
+    assert flutterSdkPath != null : "Flutter SDK não encontrado. Defina FLUTTER_SDK ou adicione flutter.sdk ao android/local.properties"
 
-    // Carrega o plugin do Flutter direto do SDK
-    includeBuild("${flutterSdkPath}/packages/flutter_tools/gradle")
+    // Necessário para o plugin do Flutter
+    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
 
     repositories {
         google()
         mavenCentral()
         gradlePluginPortal()
-        // Repositório do engine do Flutter (onde moram os io.flutter:*)
-        if (flutterSdkPath != null) {
-            maven { url "${flutterSdkPath}/bin/cache/artifacts/engine" }
-        }
     }
 
+    // Versões dos plugins
     plugins {
+        id "com.android.application" version "8.6.0"
+        id "org.jetbrains.kotlin.android" version "1.9.24"
         id "dev.flutter.flutter-plugin-loader" version "1.0.0"
-        id "com.android.application" version "8.6.0" apply false
-        id "org.jetbrains.kotlin.android" version "1.9.24" apply false
     }
 }
 
 dependencyResolutionManagement {
+    // SOMENTE settings.gradle pode declarar repositórios
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
-        // Garante novamente o repo do engine (alguns ambientes precisam aqui também)
-        def flutterSdkPath = {
-            def p = new Properties()
-            def lp = new File(settingsDir, "local.properties")
-            if (lp.exists()) {
-                lp.withReader('UTF-8') { r -> p.load(r) }
-                return p.getProperty("flutter.sdk")
-            }
-            return System.getenv("FLUTTER_SDK")
-        }.call()
-
-        if (flutterSdkPath != null) {
-            maven { url "${flutterSdkPath}/bin/cache/artifacts/engine" }
-        }
     }
 }
 
