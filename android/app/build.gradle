@@ -14,16 +14,13 @@ android {
         applicationId "com.effatha_agro_simulator.app"
         minSdk 21
         targetSdk 34
-
         versionCode 1
         versionName "1.0"
-
         multiDexEnabled true
     }
 
     buildTypes {
         debug {
-            // NÃO use shrinkResources sem minifyEnabled
             minifyEnabled false
             shrinkResources false
         }
@@ -36,7 +33,6 @@ android {
         }
     }
 
-    // Java/Kotlin 17 recomendado com AGP 8.x
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -47,10 +43,8 @@ android {
 }
 
 dependencies {
-    // NÃO declare kotlin-stdlib aqui — ela é trazida pelo plugin Kotlin (definido no settings.gradle)
-
-    // Dependências para os temas usados em styles.xml
+    // NÃO adicione kotlin-stdlib aqui (o plugin já fornece)
     implementation "androidx.core:core-ktx:1.13.1"
-    implementation "androidx.appcompat:appcompat:1.6.1"        // se preferir, pode usar 1.7.0
-    implementation "com.google.android.material:material:1.11.0" // ok com Theme.MaterialComponents
+    implementation "androidx.appcompat:appcompat:1.6.1"
+    implementation "com.google.android.material:material:1.11.0"
 }
