@@ -1,10 +1,11 @@
-// settings.gradle — Gradle 8.x + AGP 8.6.x + Flutter
+// settings.gradle — Gradle 8.x + AGP 8.6.x + Flutter (Groovy)
 
 pluginManagement {
-    // Descobre o caminho do Flutter sem depender de local.properties
+    // Tenta pegar o SDK do Flutter do ambiente
     def flutterSdkPath = System.getenv("FLUTTER_ROOT")
-    if (flutterSdkPath == null || flutterSdkPath.trim().isEmpty()) {
-        // fallback para local.properties (opcional)
+
+    // Fallback: tenta local.properties (útil em dev local; no CI geralmente FLUTTER_ROOT já existe)
+    if (!flutterSdkPath) {
         def props = new Properties()
         def lp = new File(rootDir, "local.properties")
         if (lp.exists()) {
@@ -12,30 +13,29 @@ pluginManagement {
             flutterSdkPath = props.getProperty("flutter.sdk")
         }
     }
-    if (flutterSdkPath == null || flutterSdkPath.trim().isEmpty()) {
-        throw new GradleException("Flutter SDK não encontrado. Defina FLUTTER_ROOT no ambiente ou 'flutter.sdk' em local.properties.")
+
+    if (!flutterSdkPath) {
+        throw new GradleException("Flutter SDK não encontrado. Defina FLUTTER_ROOT ou 'flutter.sdk' em android/local.properties.")
     }
 
     // Disponibiliza o plugin 'dev.flutter.flutter-gradle-plugin'
-    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+    includeBuild("${flutterSdkPath}/packages/flutter_tools/gradle")
 
+    // Repositórios para resolver plugins (AGP, Kotlin, etc.)
     repositories {
-        // Repositórios para plugins (AGP, Kotlin, etc.)
         google()
         mavenCentral()
         gradlePluginPortal()
     }
 }
 
-// IMPORTANTE: esse bloco deve vir depois do pluginManagement
-@file:Suppress("UnstableApiUsage")
 dependencyResolutionManagement {
-    // Usar os repositórios definidos AQUI
+    // Usa SOMENTE repositórios definidos neste arquivo
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         google()
         mavenCentral()
-        // Artefatos do engine do Flutter (AARs como x86_64_debug, etc.)
+        // Artefatos do engine do Flutter (AARs como x86_64_debug etc.)
         maven { url = uri("https://storage.googleapis.com/download.flutter.io") }
     }
 }
