@@ -1,28 +1,37 @@
 pluginManagement {
-    def flutterSdkPath = {
-        def properties = new Properties()
-        file("local.properties").withInputStream { properties.load(it) }
-        def flutterSdkPath = properties.getProperty("flutter.sdk")
-        assert flutterSdkPath != null : "flutter.sdk not set in local.properties"
-        return flutterSdkPath
-    }()
-
-    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
-
     repositories {
         google()
         mavenCentral()
         gradlePluginPortal()
     }
 
-    plugins {
-        // ATUALIZADO: AGP 8.6.0
-        id 'com.android.application' version '8.6.0' apply false
-        id 'com.android.library'     version '8.6.0' apply false
+    // Localiza o SDK do Flutter
+    def flutterSdkPath = {
+        def p = new Properties()
+        file("local.properties").withInputStream { p.load(it) }
+        def path = p.getProperty("flutter.sdk")
+        assert path != null : "flutter.sdk not set in local.properties"
+        return path
+    }()
 
-        // ATUALIZADO: Kotlin compatível com AGP 8.6
-        id 'org.jetbrains.kotlin.android' version '1.9.24' apply false
+    // Inclui o plugin Gradle do Flutter (necessário para resolver io.flutter.*)
+    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+
+    plugins {
+        id "com.android.application" version "8.6.0" apply false
+        id "com.android.library"     version "8.6.0" apply false
+        id "org.jetbrains.kotlin.android" version "1.9.24" apply false
+        // O plugin do Flutter é fornecido pelo includeBuild acima (id: dev.flutter.flutter-gradle-plugin)
     }
 }
 
-include ':app'
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "effatha_agro_simulator"
+include(":app")
