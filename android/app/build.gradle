@@ -47,11 +47,10 @@ android {
 }
 
 dependencies {
-    // Alinhe com o plugin Kotlin definido em android/settings.gradle:
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.24"
+    // NÃO declare kotlin-stdlib aqui — ela é trazida pelo plugin Kotlin (definido no settings.gradle)
 
-    // Temas do styles.xml (AppCompat/Material). Se não usar temas nativos, pode remover.
+    // Dependências para os temas usados em styles.xml
     implementation "androidx.core:core-ktx:1.13.1"
-    implementation "androidx.appcompat:appcompat:1.6.1"
-    implementation "com.google.android.material:material:1.11.0"
+    implementation "androidx.appcompat:appcompat:1.6.1"        // se preferir, pode usar 1.7.0
+    implementation "com.google.android.material:material:1.11.0" // ok com Theme.MaterialComponents
 }
