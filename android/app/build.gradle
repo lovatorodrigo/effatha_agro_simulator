@@ -1,3 +1,5 @@
+// android/app/build.gradle — módulo do app (Groovy)
+
 plugins {
     id "com.android.application"
     id "org.jetbrains.kotlin.android"
@@ -7,49 +9,42 @@ plugins {
 android {
     namespace "com.effatha_agro_simulator.app"
 
+    // Use números explícitos para ficar independente das extensões do Flutter
     compileSdk 34
 
     defaultConfig {
         applicationId "com.effatha_agro_simulator.app"
-        minSdk 23
+        minSdk 21
         targetSdk 34
 
         versionCode 1
-        versionName "1.0.0"
+        versionName "1.0"
 
         multiDexEnabled true
     }
 
     buildTypes {
         release {
-            // Ajuste conforme necessário
+            // Ajuste conforme necessidade (R8/Proguard)
             minifyEnabled false
-            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            // nada especial aqui
+            // configs de debug, se precisar
         }
     }
 
-    // Java/Kotlin 17 (combina com AGP 8.6.x)
+    // Java/Kotlin 17 é o recomendado com AGP 8.x
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    kotlin {
-        jvmToolchain(17)
-    }
-
-    // (Opcional) Desativa o namespace herdado de manifest
-    buildFeatures {
-        buildConfig = true
+    kotlinOptions {
+        jvmTarget = '17'
     }
 }
 
-// Não declare 'repositories { }' aqui! (fica no settings.gradle)
-
 dependencies {
-    // Normalmente o plugin Kotlin já puxa a stdlib, mas se quiser força-la:
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.24"
+    // Outras dependências do seu app entram aqui, se houver
 }
