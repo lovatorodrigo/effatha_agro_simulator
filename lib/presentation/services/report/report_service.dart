@@ -1,4 +1,3 @@
-
 import 'dart:typed_data';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/intl.dart';
@@ -98,7 +97,10 @@ class ReportService {
             children: [
               pw.Text('Effatha Agro Simulator', style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
               pw.Text('Simulation Report', style: const pw.TextStyle(fontSize: 12)),
-              pw.Text('Crop: ${_cropName(data.cropKey)} • Area unit: ${data.areaUnit} • Productivity unit: ${data.productivityUnit}', style: const pw.TextStyle(fontSize: 10)),
+              pw.Text(
+                'Crop: ${_cropName(data.cropKey)} • Area unit: ${data.areaUnit} • Productivity unit: ${data.productivityUnit}',
+                style: const pw.TextStyle(fontSize: 10),
+              ),
             ],
           ),
           pw.Spacer(),
@@ -153,11 +155,10 @@ class ReportService {
     );
   }
 
+  // Removido textBaseline (não suportado por pw.Row).
   static pw.Widget _kv(String k, String v) => pw.Container(
         padding: const pw.EdgeInsets.only(right: 8, bottom: 2),
         child: pw.Row(
-          crossAxisAlignment: pw.CrossAxisAlignment.baseline,
-          textBaseline: pw.TextBaseline.alphabetic,
           children: [
             pw.Text('$k: ', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
             pw.Text(v, style: const pw.TextStyle(fontSize: 11)),
@@ -265,35 +266,57 @@ class ReportService {
       children: [
         _title('Notes'),
         pw.SizedBox(height: 6),
-        pw.Bullet(text: 'Units shown respect the user display preferences at the time of export (area: ${data.areaUnit}, productivity: ${data.productivityUnit}).'),
-        pw.Bullet(text: 'Internal calculations use SI standards (ha, kg/ha, $/kg, $/ha). Sack weight: ${data.kgPerSack.toStringAsFixed(0)} kg.'),
+        pw.Bullet(
+          text:
+              'Units shown respect the user display preferences at the time of export (area: ${data.areaUnit}, productivity: ${data.productivityUnit}).',
+        ),
+        pw.Bullet(
+          text:
+              'Internal calculations use SI standards (ha, kg/ha, $/kg, $/ha). Sack weight: ${data.kgPerSack.toStringAsFixed(0)} kg.',
+        ),
       ],
     );
   }
 
   static String _cropName(String key) {
     switch (key) {
-      case 'soy': return 'Soy';
-      case 'corn': return 'Corn';
-      case 'cotton': return 'Cotton';
-      case 'sugarcane': return 'Sugarcane';
-      case 'wheat': return 'Wheat';
-      case 'coffee': return 'Coffee';
-      case 'orange': return 'Orange';
-      default: return key;
+      case 'soy':
+        return 'Soy';
+      case 'corn':
+        return 'Corn';
+      case 'cotton':
+        return 'Cotton';
+      case 'sugarcane':
+        return 'Sugarcane';
+      case 'wheat':
+        return 'Wheat';
+      case 'coffee':
+        return 'Coffee';
+      case 'orange':
+        return 'Orange';
+      default:
+        return key;
     }
   }
 
   static String _cropAsset(String key) {
     switch (key) {
-      case 'soy': return 'assets/images/bg_sim_soy.jpg';
-      case 'corn': return 'assets/images/bg_sim_corn.jpg';
-      case 'cotton': return 'assets/images/bg_sim_cotton.jpg';
-      case 'sugarcane': return 'assets/images/bg_sim_sugarcane.jpg';
-      case 'wheat': return 'assets/images/bg_sim_wheat.jpg';
-      case 'coffee': return 'assets/images/bg_sim_coffee.jpg';
-      case 'orange': return 'assets/images/bg_sim_orange.jpg';
-      default: return 'assets/images/bg_sim_soy.jpg';
+      case 'soy':
+        return 'assets/images/bg_sim_soy.jpg';
+      case 'corn':
+        return 'assets/images/bg_sim_corn.jpg';
+      case 'cotton':
+        return 'assets/images/bg_sim_cotton.jpg';
+      case 'sugarcane':
+        return 'assets/images/bg_sim_sugarcane.jpg';
+      case 'wheat':
+        return 'assets/images/bg_sim_wheat.jpg';
+      case 'coffee':
+        return 'assets/images/bg_sim_coffee.jpg';
+      case 'orange':
+        return 'assets/images/bg_sim_orange.jpg';
+      default:
+        return 'assets/images/bg_sim_soy.jpg';
     }
   }
 
