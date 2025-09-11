@@ -2,22 +2,19 @@
 
 plugins {
     id "com.android.application"
-    id "org.jetbrains.kotlin.android"
+    id "org.jetbrains.kotlin.android"        // versão vem do settings.gradle
     id "dev.flutter.flutter-gradle-plugin"
 }
 
 android {
     namespace "com.effatha_agro_simulator.app"
-    // Atende aos plugins que pedem 36 e às libs AndroidX 1.16+
+    // Plugins (connectivity_plus, share_plus, etc.) pedem 36
     compileSdk 36
 
     defaultConfig {
         applicationId "com.effatha_agro_simulator.app"
-
-        // Pode manter 21 (plugins que você usa suportam)
         minSdk 21
-
-        // O targetSdk pode continuar 34 (Play exige ao menos 34). Não precisa ser 36.
+        // Pode manter 34 como target (não precisa ser 36)
         targetSdk 34
 
         versionCode 1
@@ -28,12 +25,11 @@ android {
 
     buildTypes {
         debug {
-            // NÃO use shrinkResources sem minifyEnabled
             minifyEnabled false
             shrinkResources false
         }
         release {
-            // Para usar shrinkResources é obrigatório habilitar minify (R8)
+            // shrinkResources exige minifyEnabled = true (R8)
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
@@ -41,7 +37,7 @@ android {
         }
     }
 
-    // Java/Kotlin 17 recomendado com AGP 8.x
+    // Java/Kotlin 17 com AGP 8.x
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -52,10 +48,10 @@ android {
 }
 
 dependencies {
-    // Deixe o stdlib fora (o plugin Kotlin já injeta a stdlib correta).
-    // implementation "org.jetbrains.kotlin:kotlin-stdlib:2.1.0"  // <- REMOVIDO
+    // NÃO coloque kotlin-stdlib aqui; o plugin já injeta a correta.
+    // implementation "org.jetbrains.kotlin:kotlin-stdlib:xxx"   <-- mantenha REMOVIDO
 
-    // Temas que você usa no styles.xml (AppCompat/Material)
+    // Para os temas do styles.xml
     implementation "androidx.core:core-ktx:1.16.0"
     implementation "androidx.appcompat:appcompat:1.7.0"
     implementation "com.google.android.material:material:1.12.0"
