@@ -1,35 +1,56 @@
 pluginManagement {
+    def flutterSdkPath = {
+        // 1) tenta local.properties
+        def p = new Properties()
+        def lp = new File(settingsDir, "local.properties")
+        if (lp.exists()) {
+            lp.withReader('UTF-8') { r -> p.load(r) }
+            def sdk = p.getProperty("flutter.sdk")
+            if (sdk != null) return sdk
+        }
+        // 2) fallback para variável de ambiente (Codemagic usa /Users/builder/programs/flutter)
+        return System.getenv("FLUTTER_SDK")
+    }.call()
+
+    // Carrega o plugin do Flutter direto do SDK
+    includeBuild("${flutterSdkPath}/packages/flutter_tools/gradle")
+
     repositories {
         google()
         mavenCentral()
         gradlePluginPortal()
+        // Repositório do engine do Flutter (onde moram os io.flutter:*)
+        if (flutterSdkPath != null) {
+            maven { url "${flutterSdkPath}/bin/cache/artifacts/engine" }
+        }
     }
 
-    // Localiza o SDK do Flutter
-    def flutterSdkPath = {
-        def p = new Properties()
-        file("local.properties").withInputStream { p.load(it) }
-        def path = p.getProperty("flutter.sdk")
-        assert path != null : "flutter.sdk not set in local.properties"
-        return path
-    }()
-
-    // Inclui o plugin Gradle do Flutter (necessário para resolver io.flutter.*)
-    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
-
     plugins {
+        id "dev.flutter.flutter-plugin-loader" version "1.0.0"
         id "com.android.application" version "8.6.0" apply false
-        id "com.android.library"     version "8.6.0" apply false
         id "org.jetbrains.kotlin.android" version "1.9.24" apply false
-        // O plugin do Flutter é fornecido pelo includeBuild acima (id: dev.flutter.flutter-gradle-plugin)
     }
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
+        // Garante novamente o repo do engine (alguns ambientes precisam aqui também)
+        def flutterSdkPath = {
+            def p = new Properties()
+            def lp = new File(settingsDir, "local.properties")
+            if (lp.exists()) {
+                lp.withReader('UTF-8') { r -> p.load(r) }
+                return p.getProperty("flutter.sdk")
+            }
+            return System.getenv("FLUTTER_SDK")
+        }.call()
+
+        if (flutterSdkPath != null) {
+            maven { url "${flutterSdkPath}/bin/cache/artifacts/engine" }
+        }
     }
 }
 
