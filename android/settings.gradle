@@ -1,41 +1,55 @@
+// android/settings.gradle — compatível com AGP 8.6 e Flutter moderno
+
+rootProject.name = "android"
+
 pluginManagement {
-    // Descobre o caminho do Flutter SDK (ENV ou local.properties)
-    def flutterSdkPath = System.getenv("FLUTTER_SDK")
-    if (!flutterSdkPath) {
-        def props = new Properties()
-        def f = new File(rootDir, "local.properties")
-        if (f.exists()) {
-            f.withInputStream { props.load(it) }
-            flutterSdkPath = props.getProperty("flutter.sdk")
+    // Resolve caminho do Flutter SDK
+    def flutterSdkPath
+    def props = new Properties()
+    def propsFile = new File(settingsDir, "local.properties")
+    if (propsFile.exists()) {
+        propsFile.withInputStream { props.load(it) }
+        flutterSdkPath = props.getProperty("flutter.sdk")
+    }
+    if (flutterSdkPath == null || flutterSdkPath.trim().isEmpty()) {
+        // Fallback para ambiente do Codemagic / local
+        flutterSdkPath = System.getenv("FLUTTER_HOME")
+        if (flutterSdkPath == null || flutterSdkPath.trim().isEmpty()) {
+            flutterSdkPath = System.getenv("FLUTTER_ROOT")
         }
     }
-    assert flutterSdkPath != null : "Flutter SDK não encontrado. Defina FLUTTER_SDK ou adicione flutter.sdk ao android/local.properties"
-
-    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+    if (flutterSdkPath == null || flutterSdkPath.trim().isEmpty()) {
+        throw new GradleException(
+            "Flutter SDK path not found. Set 'flutter.sdk' in android/local.properties " +
+            "or define FLUTTER_HOME/FLUTTER_ROOT no ambiente."
+        )
+    }
 
     repositories {
+        gradlePluginPortal()
         google()
         mavenCentral()
-        gradlePluginPortal()
+        // Repositório do plugin do Flutter (obrigatório)
+        maven { url "${flutterSdkPath}/packages/flutter_tools/gradle" }
     }
+
+    // Versões dos plugins (AGP/Kotlin). O plugin do Flutter é resolvido via repositório acima.
     plugins {
-        id "com.android.application" version "8.6.0"
-        id "org.jetbrains.kotlin.android" version "1.9.24"
-        id "dev.flutter.flutter-plugin-loader" version "1.0.0"
+        id("com.android.application") version "8.6.0" apply false
+        id("com.android.library") version "8.6.0" apply false
+        id("org.jetbrains.kotlin.android") version "1.9.24" apply false
+        // NÃO declare 'dev.flutter.flutter-gradle-plugin' aqui (ele é resolvido via maven do Flutter)
     }
 }
 
+// Centraliza repositórios para evitar o erro “prefer settings repositories”
 dependencyResolutionManagement {
-    // NÃO usar FAIL_ON_PROJECT_REPOS aqui
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         google()
         mavenCentral()
-        // Adiciona o repositório do engine do Flutter no nível de settings,
-        // assim o plugin não precisa injetar no projeto.
-        maven { url = uri("$flutterSdkPath/bin/cache/artifacts/engine") }
+        // adicione outros se realmente precisar, ex.: maven { url "https://jitpack.io" }
     }
 }
 
-rootProject.name = "effatha_agro_simulator"
 include(":app")
