@@ -22,7 +22,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   void initState() {
     super.initState();
-    // Set status bar style for registration screen
+    // Status bar style
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -33,22 +33,22 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   Future<void> _handleEmailRegistration(
-      String name, String email, String password) async {
+    String name,
+    String email,
+    String password,
+  ) async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      // Simulate registration process
       await Future.delayed(const Duration(seconds: 2));
 
-      // Mock registration validation
       if (email.toLowerCase() == 'test@effatha.com') {
         throw Exception('Email already exists');
       }
 
-      // Show success message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -61,7 +61,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           ),
         );
 
-        // Navigate to simulation dashboard
         Navigator.pushReplacementNamed(context, '/simulation-dashboard');
       }
     } catch (e) {
@@ -70,9 +69,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       });
     } finally {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -84,7 +81,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     });
 
     try {
-      // Simulate Google Sign-In process
       await Future.delayed(const Duration(seconds: 1));
 
       if (mounted) {
@@ -103,11 +99,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         _errorMessage = 'Google Sign-Up failed. Please try again.';
       });
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -118,7 +110,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     });
 
     try {
-      // Simulate Apple Sign-In process
       await Future.delayed(const Duration(seconds: 1));
 
       if (mounted) {
@@ -137,11 +128,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         _errorMessage = 'Apple Sign-Up failed. Please try again.';
       });
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -152,207 +139,209 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return AppBackground(
       assetPath: 'assets/images/bg_sim_soy.jpg',
-      child:  return Scaffold(
-        backgroundColor: Colors.transparent,
-      backgroundColor: Colors.transparent,
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: NetworkImage(
-              'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8c295YmVhbnN8ZW58MHx8MHx8fDA%3D',
-            ),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
+      child: Scaffold(
+        backgroundColor: Colors.transparent, // apenas uma vez
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
           decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0x99000000),
-                Color(0x66000000),
-                Color(0x99000000),
-              ],
-              stops: [0.0, 0.5, 1.0],
+            image: DecorationImage(
+              image: NetworkImage(
+                'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8c295YmVhbnN8ZW58MHx8MHx8fDA%3D',
+              ),
+              fit: BoxFit.cover,
             ),
           ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                // App Bar
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: CustomIconWidget(
-                          iconName: 'arrow_back',
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                        padding: EdgeInsets.all(2.w),
-                      ),
-                      Expanded(
-                        child: Text(
-                          'Create Account',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      SizedBox(width: 12.w), // Balance the back button
-                    ],
-                  ),
-                ),
-
-                // Scrollable Content
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(horizontal: 5.w),
-                    child: Column(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0x99000000),
+                  Color(0x66000000),
+                  Color(0x99000000),
+                ],
+                stops: [0.0, 0.5, 1.0],
+              ),
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  // App Bar
+                  Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
+                    child: Row(
                       children: [
-                        SizedBox(height: 2.h),
-
-                        // Effatha Logo
-                        Container(
-                          width: 25.w,
-                          height: 25.w,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.9),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Center(
-                            child: Text(
-                              'E',
-                              style: TextStyle(
-                                fontSize: 32.sp,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.primaryLight,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 2.h),
-
-                        // Welcome Text
-                        Text(
-                          'Join Effatha',
-                          style: theme.textTheme.headlineMedium?.copyWith(
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: CustomIconWidget(
+                            iconName: 'arrow_back',
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withOpacity(0.5),
-                                offset: const Offset(0, 2),
-                                blurRadius: 4,
-                              ),
-                            ],
+                            size: 24,
                           ),
-                          textAlign: TextAlign.center,
+                          padding: EdgeInsets.all(2.w),
                         ),
-                        SizedBox(height: 1.h),
-
-                        Text(
-                          'Start optimizing your agricultural profitability with advanced simulation tools',
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            color: Colors.white.withOpacity(0.9),
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withOpacity(0.5),
-                                offset: const Offset(0, 1),
-                                blurRadius: 2,
-                              ),
-                            ],
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(height: 4.h),
-
-                        // Error Message
-                        if (_errorMessage != null) ...[
-                          Container(
-                            width: 90.w,
-                            constraints: BoxConstraints(maxWidth: 400),
-                            padding: EdgeInsets.all(3.w),
-                            decoration: BoxDecoration(
-                              color: AppTheme.errorLight.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color:
-                                    AppTheme.errorLight.withOpacity(0.3),
-                              ),
+                        Expanded(
+                          child: Text(
+                            'Create Account',
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
                             ),
-                            child: Row(
-                              children: [
-                                CustomIconWidget(
-                                  iconName: 'error',
-                                  color: AppTheme.errorLight,
-                                  size: 20,
-                                ),
-                                SizedBox(width: 2.w),
-                                Expanded(
-                                  child: Text(
-                                    _errorMessage!,
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: AppTheme.errorLight,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          SizedBox(height: 2.h),
-                        ],
-
-                        // Registration Form
-                        RegistrationFormWidget(
-                          onRegister: _handleEmailRegistration,
-                          isLoading: _isLoading,
                         ),
-                        SizedBox(height: 3.h),
-
-                        // Social Registration Options
-                        SocialRegistrationWidget(
-                          onGoogleSignUp: _handleGoogleSignUp,
-                          onAppleSignUp:
-                              Theme.of(context).platform == TargetPlatform.iOS
-                                  ? _handleAppleSignUp
-                                  : null,
-                          isLoading: _isLoading,
-                        ),
-                        SizedBox(height: 4.h),
-
-                        // Footer
-                        RegistrationFooterWidget(
-                          onSignInTap: _navigateToLogin,
-                        ),
-                        SizedBox(height: 2.h),
+                        SizedBox(width: 12.w), // balance
                       ],
                     ),
                   ),
-                ),
-              ],
+
+                  // Conteúdo rolável
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(horizontal: 5.w),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 2.h),
+
+                          // Logo
+                          Container(
+                            width: 25.w,
+                            height: 25.w,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.9),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                'E',
+                                style: TextStyle(
+                                  fontSize: 32.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.primaryLight,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+
+                          // Título
+                          Text(
+                            'Join Effatha',
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.5),
+                                  offset: const Offset(0, 2),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 1.h),
+
+                          Text(
+                            'Start optimizing your agricultural profitability with advanced simulation tools',
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: Colors.white.withOpacity(0.9),
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.5),
+                                  offset: const Offset(0, 1),
+                                  blurRadius: 2,
+                                ),
+                              ],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 4.h),
+
+                          // Erro
+                          if (_errorMessage != null) ...[
+                            Container(
+                              width: 90.w,
+                              constraints: const BoxConstraints(maxWidth: 400),
+                              padding: EdgeInsets.all(3.w),
+                              decoration: BoxDecoration(
+                                color: AppTheme.errorLight.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color:
+                                      AppTheme.errorLight.withOpacity(0.3),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  CustomIconWidget(
+                                    iconName: 'error',
+                                    color: AppTheme.errorLight,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 2.w),
+                                  Expanded(
+                                    child: Text(
+                                      _errorMessage!,
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(
+                                        color: AppTheme.errorLight,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: 2.h),
+                          ],
+
+                          // Formulário
+                          RegistrationFormWidget(
+                            onRegister: _handleEmailRegistration,
+                            isLoading: _isLoading,
+                          ),
+                          SizedBox(height: 3.h),
+
+                          // Social
+                          SocialRegistrationWidget(
+                            onGoogleSignUp: _handleGoogleSignUp,
+                            onAppleSignUp:
+                                Theme.of(context).platform ==
+                                        TargetPlatform.iOS
+                                    ? _handleAppleSignUp
+                                    : null,
+                            isLoading: _isLoading,
+                          ),
+                          SizedBox(height: 4.h),
+
+                          // Rodapé
+                          RegistrationFooterWidget(
+                            onSignInTap: _navigateToLogin,
+                          ),
+                          SizedBox(height: 2.h),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
-    ););
+    );
   }
 }
