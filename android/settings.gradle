@@ -25,23 +25,22 @@ pluginManagement {
         maven { url = "https://storage.googleapis.com/download.flutter.io" }
     }
 
-    // **VERSÕES AQUI**
+    // **VERSÕES DO TOOLCHAIN**
     plugins {
         id "com.android.application" version "8.6.1"
         id "com.android.library"     version "8.6.1"
-        id "org.jetbrains.kotlin.android" version "2.0.21"   // >= 2.0, estável com AGP 8.6.x
-        // não defina versão para o loader; ele vem do includeBuild acima
+        id "org.jetbrains.kotlin.android" version "2.0.21" // ≥ 2.0 recomendado pelo Flutter
+        // Não defina versão para o loader do Flutter; vem do includeBuild acima
     }
 }
 
-// aplica o loader do Flutter e desabilita aplicar os outros aqui
+// Aplica o loader do Flutter e não aplica os outros aqui
 plugins {
     id "dev.flutter.flutter-plugin-loader"
     id "com.android.application" apply false
     id "org.jetbrains.kotlin.android" apply false
 }
 
-// Use os repositórios definidos no settings (evita conflitos)
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
