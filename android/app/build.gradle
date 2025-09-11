@@ -9,7 +9,7 @@ plugins {
 android {
     namespace "com.effatha_agro_simulator.app"
 
-    // Plugins e androidx.core 1.16.0 pedem 35+; use 36 para ficar tranquilo
+    // Plugins exigem 35/36. Use 36 para cobrir todos.
     compileSdk 36
 
     defaultConfig {
@@ -25,11 +25,12 @@ android {
 
     buildTypes {
         debug {
+            // NÃO use shrinkResources sem minifyEnabled
             minifyEnabled false
             shrinkResources false
         }
         release {
-            // shrinkResources exige minifyEnabled = true
+            // Para usar shrinkResources é obrigatório habilitar minify (R8)
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
@@ -37,7 +38,7 @@ android {
         }
     }
 
-    // Java/Kotlin 17 com AGP 8.x
+    // Java/Kotlin 17 recomendado com AGP 8.x
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -48,9 +49,10 @@ android {
 }
 
 dependencies {
-    // **NÃO** adicione kotlin-stdlib manualmente (o plugin de Kotlin já traz)
-    // Temas usados em styles.xml:
-    implementation "androidx.core:core-ktx:1.16.0"
+    // NÃO force a stdlib do Kotlin aqui (ela vem do plugin e ficará alinhada ao KGP 2.2.0)
+
+    // Se seus styles usam AppCompat/Material, mantenha estas (ok com compileSdk 36):
+    implementation "androidx.core:core-ktx:1.13.1"
     implementation "androidx.appcompat:appcompat:1.7.0"
     implementation "com.google.android.material:material:1.12.0"
 }
