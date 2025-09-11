@@ -1,15 +1,13 @@
 // android/settings.gradle
 
 pluginManagement {
-    // Descobre o caminho do SDK do Flutter via FLUTTER_HOME ou android/local.properties
+    // Descobre o caminho do SDK do Flutter (FLUTTER_HOME ou local.properties)
     def flutterSdkPath = System.getenv("FLUTTER_HOME")
     if (flutterSdkPath == null) {
-        def props = new Properties()
-        def localProps = new File(settingsDir, "local.properties")
-        if (localProps.exists()) {
-            localProps.withInputStream { props.load(it) }
-        }
-        flutterSdkPath = props.getProperty("flutter.sdk")
+        def p = new Properties()
+        def lp = new File(settingsDir, "local.properties")
+        if (lp.exists()) { lp.withInputStream { p.load(it) } }
+        flutterSdkPath = p.getProperty("flutter.sdk")
     }
     if (flutterSdkPath == null) {
         throw new GradleException("Flutter SDK não encontrado. Defina FLUTTER_HOME ou 'flutter.sdk' em android/local.properties.")
@@ -22,31 +20,28 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
-        maven { url = uri("https://storage.googleapis.com/download.flutter.io") }
+        maven { url = "https://storage.googleapis.com/download.flutter.io" }
     }
 
-    // Versões dos plugins
+    // Versões do AGP e Kotlin Gradle Plugin
     plugins {
         id "com.android.application" version "8.6.0"
         id "org.jetbrains.kotlin.android" version "2.2.0"
-        // o loader do Flutter é resolvido pelo includeBuild acima (não precisa de versão aqui)
     }
 }
 
-// Aplica o loader do Flutter e não aplica os demais aqui
 plugins {
     id "dev.flutter.flutter-plugin-loader"
     id "com.android.application" apply false
     id "org.jetbrains.kotlin.android" apply false
 }
 
-// Centraliza repositórios e impede sobrescrita em subprojetos
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://storage.googleapis.com/download.flutter.io") }
+        maven { url = "https://storage.googleapis.com/download.flutter.io" }
     }
 }
 
