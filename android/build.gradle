@@ -1,4 +1,5 @@
-// android/build.gradle (root) — minimalista; sem plugins/repositories aqui!
+// android/build.gradle — raiz (Groovy)
+// Sem buildscript {}, sem ext.kotlin_version, sem repositories {}
 
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
