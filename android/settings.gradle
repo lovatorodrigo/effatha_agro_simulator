@@ -1,9 +1,7 @@
-// android/settings.gradle — compatível com AGP 8.6 e Flutter moderno
-
-rootProject.name = "android"
+// android/settings.gradle — mantenha pluginManagement como 1ª instrução
 
 pluginManagement {
-    // Resolve caminho do Flutter SDK
+    // Descobre o caminho do Flutter SDK
     def flutterSdkPath
     def props = new Properties()
     def propsFile = new File(settingsDir, "local.properties")
@@ -11,17 +9,13 @@ pluginManagement {
         propsFile.withInputStream { props.load(it) }
         flutterSdkPath = props.getProperty("flutter.sdk")
     }
-    if (flutterSdkPath == null || flutterSdkPath.trim().isEmpty()) {
-        // Fallback para ambiente do Codemagic / local
-        flutterSdkPath = System.getenv("FLUTTER_HOME")
-        if (flutterSdkPath == null || flutterSdkPath.trim().isEmpty()) {
-            flutterSdkPath = System.getenv("FLUTTER_ROOT")
-        }
+    if (!flutterSdkPath) {
+        flutterSdkPath = System.getenv("FLUTTER_HOME") ?: System.getenv("FLUTTER_ROOT")
     }
-    if (flutterSdkPath == null || flutterSdkPath.trim().isEmpty()) {
+    if (!flutterSdkPath) {
         throw new GradleException(
-            "Flutter SDK path not found. Set 'flutter.sdk' in android/local.properties " +
-            "or define FLUTTER_HOME/FLUTTER_ROOT no ambiente."
+            "Flutter SDK path not found. Set 'flutter.sdk' em android/local.properties " +
+            "ou defina FLUTTER_HOME/FLUTTER_ROOT no ambiente."
         )
     }
 
@@ -29,27 +23,28 @@ pluginManagement {
         gradlePluginPortal()
         google()
         mavenCentral()
-        // Repositório do plugin do Flutter (obrigatório)
+        // Repositório do plugin do Flutter
         maven { url "${flutterSdkPath}/packages/flutter_tools/gradle" }
     }
 
-    // Versões dos plugins (AGP/Kotlin). O plugin do Flutter é resolvido via repositório acima.
+    // Versões dos plugins base (AGP e Kotlin)
     plugins {
         id("com.android.application") version "8.6.0" apply false
-        id("com.android.library") version "8.6.0" apply false
+        id("com.android.library")     version "8.6.0" apply false
         id("org.jetbrains.kotlin.android") version "1.9.24" apply false
-        // NÃO declare 'dev.flutter.flutter-gradle-plugin' aqui (ele é resolvido via maven do Flutter)
+        // Não precisa declarar o plugin do Flutter aqui; ele é resolvido pelo repositório acima
     }
 }
 
-// Centraliza repositórios para evitar o erro “prefer settings repositories”
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         google()
         mavenCentral()
-        // adicione outros se realmente precisar, ex.: maven { url "https://jitpack.io" }
+        // adicione outros repos aqui se realmente precisar (ex.: jitpack)
+        // maven { url "https://jitpack.io" }
     }
 }
 
+rootProject.name = "android"
 include(":app")
