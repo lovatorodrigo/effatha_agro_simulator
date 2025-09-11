@@ -6,21 +6,18 @@ class AppTheme {
   AppTheme._();
 
   // Agricultural Professional Color Palette
-  static const Color primaryLight =
-      Color(0xFF2E7D32); // Deep agricultural green
+  static const Color primaryLight = Color(0xFF2E7D32); // Deep agricultural green
   static const Color primaryVariantLight = Color(0xFF1B5E20);
   static const Color secondaryLight = Color(0xFF4CAF50); // Lighter green
   static const Color secondaryVariantLight = Color(0xFF388E3C);
-  static const Color backgroundLight =
-      Color(0xFFF8F9FA); // Neutral light background
+  static const Color backgroundLight = Color(0xFFF8F9FA); // Neutral light background
   static const Color surfaceLight = Color(0xFFFFFFFF); // Pure white for cards
   static const Color errorLight = Color(0xFFD32F2F); // Clear red for errors
   static const Color warningLight = Color(0xFFF57C00); // Amber for caution
   static const Color successLight = Color(0xFF388E3C); // Confirmation green
   static const Color onPrimaryLight = Color(0xFFFFFFFF);
   static const Color onSecondaryLight = Color(0xFFFFFFFF);
-  static const Color onBackgroundLight =
-      Color(0xFF212121); // High contrast dark text
+  static const Color onBackgroundLight = Color(0xFF212121); // High contrast dark text
   static const Color onSurfaceLight = Color(0xFF212121);
   static const Color onErrorLight = Color(0xFFFFFFFF);
 
@@ -40,8 +37,7 @@ class AppTheme {
   static const Color onErrorDark = Color(0xFF000000);
 
   // Card and dialog colors with glassmorphism support
-  static const Color cardLight =
-      Color(0xFFFFFFFF); // 85% opacity for glassmorphism
+  static const Color cardLight = Color(0xFFFFFFFF);
   static const Color cardDark = Color(0xFF2D2D2D);
   static const Color dialogLight = Color(0xFFFFFFFF);
   static const Color dialogDark = Color(0xFF2D2D2D);
@@ -54,11 +50,9 @@ class AppTheme {
   static const Color dividerLight = Color(0x1F000000);
   static const Color dividerDark = Color(0x1FFFFFFF);
 
-  // Text colors for agricultural professional interface
-  static const Color textPrimaryLight =
-      Color(0xFF212121); // AA accessibility compliance
-  static const Color textSecondaryLight =
-      Color(0xFF757575); // Medium gray for supporting info
+  // Text colors
+  static const Color textPrimaryLight = Color(0xFF212121); // AA accessibility compliance
+  static const Color textSecondaryLight = Color(0xFF757575); // Medium gray for supporting info
   static const Color textDisabledLight = Color(0x61000000); // 38% opacity
 
   static const Color textPrimaryDark = Color(0xFFFFFFFF);
@@ -66,8 +60,7 @@ class AppTheme {
   static const Color textDisabledDark = Color(0x61FFFFFF);
 
   // Overlay for background images
-  static const Color overlayLight =
-      Color(0x99000000); // 60% opacity for text readability
+  static const Color overlayLight = Color(0x99000000); // 60% opacity for text readability
   static const Color overlayDark = Color(0x99000000);
 
   /// Light theme optimized for outdoor agricultural use
@@ -240,34 +233,34 @@ class AppTheme {
       ),
     ),
     switchTheme: SwitchThemeData(
-      thumbColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
+      thumbColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
           return primaryLight;
         }
         return null;
       }),
-      trackColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
+      trackColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
           return primaryLight.withOpacity(0.5);
         }
         return null;
       }),
     ),
     checkboxTheme: CheckboxThemeData(
-      fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
+      fillColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
           return primaryLight;
         }
         return null;
       }),
-      checkColor: WidgetStateProperty.all(onPrimaryLight),
+      checkColor: MaterialStateProperty.all(onPrimaryLight),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(2.0),
       ),
     ),
     radioTheme: RadioThemeData(
-      fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
+      fillColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
           return primaryLight;
         }
         return null;
@@ -290,7 +283,7 @@ class AppTheme {
         fontWeight: FontWeight.w400,
       ),
     ),
-    tabBarTheme: TabBarTheme(
+    tabBarTheme: TabBarThemeData(
       labelColor: onPrimaryLight,
       unselectedLabelColor: onPrimaryLight.withOpacity(0.7),
       indicatorColor: onPrimaryLight,
@@ -305,6 +298,7 @@ class AppTheme {
         fontWeight: FontWeight.w400,
         letterSpacing: 1.25,
       ),
+      dividerColor: Colors.transparent,
     ),
     tooltipTheme: TooltipThemeData(
       decoration: BoxDecoration(
@@ -338,7 +332,8 @@ class AppTheme {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
       ),
-    ), dialogTheme: DialogThemeData(backgroundColor: dialogLight),
+    ),
+    dialogTheme: const DialogTheme(backgroundColor: dialogLight),
   );
 
   /// Dark theme for low-light agricultural environments
@@ -511,34 +506,34 @@ class AppTheme {
       ),
     ),
     switchTheme: SwitchThemeData(
-      thumbColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
+      thumbColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
           return primaryDark;
         }
         return null;
       }),
-      trackColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
+      trackColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
           return primaryDark.withOpacity(0.5);
         }
         return null;
       }),
     ),
     checkboxTheme: CheckboxThemeData(
-      fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
+      fillColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
           return primaryDark;
         }
         return null;
       }),
-      checkColor: WidgetStateProperty.all(onPrimaryDark),
+      checkColor: MaterialStateProperty.all(onPrimaryDark),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(2.0),
       ),
     ),
     radioTheme: RadioThemeData(
-      fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
+      fillColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
           return primaryDark;
         }
         return null;
@@ -561,7 +556,7 @@ class AppTheme {
         fontWeight: FontWeight.w400,
       ),
     ),
-    tabBarTheme: TabBarTheme(
+    tabBarTheme: TabBarThemeData(
       labelColor: onSurfaceDark,
       unselectedLabelColor: textSecondaryDark,
       indicatorColor: primaryDark,
@@ -576,6 +571,7 @@ class AppTheme {
         fontWeight: FontWeight.w400,
         letterSpacing: 1.25,
       ),
+      dividerColor: Colors.transparent,
     ),
     tooltipTheme: TooltipThemeData(
       decoration: BoxDecoration(
@@ -609,14 +605,14 @@ class AppTheme {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
       ),
-    ), dialogTheme: DialogThemeData(backgroundColor: dialogDark),
+    ),
+    dialogTheme: const DialogTheme(backgroundColor: dialogDark),
   );
 
   /// Helper method to build text theme optimized for agricultural professional interface
   static TextTheme _buildTextTheme({required bool isLight}) {
     final Color textPrimary = isLight ? textPrimaryLight : textPrimaryDark;
-    final Color textSecondary =
-        isLight ? textSecondaryLight : textSecondaryDark;
+    final Color textSecondary = isLight ? textSecondaryLight : textSecondaryDark;
     final Color textDisabled = isLight ? textDisabledLight : textDisabledDark;
 
     return TextTheme(
@@ -740,7 +736,7 @@ class AppTheme {
     double opacity = 0.85,
   }) {
     return BoxDecoration(
-      color: (isLight ? surfaceLight : surfaceDark).withValues(alpha: opacity),
+      color: (isLight ? surfaceLight : surfaceDark).withOpacity(opacity),
       borderRadius: BorderRadius.circular(12.0),
       border: Border.all(
         color: (isLight ? dividerLight : dividerDark).withOpacity(0.2),
