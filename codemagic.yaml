@@ -1,93 +1,64 @@
 workflows:
   android_apk:
-    name: Android APK (split per ABI)
+    name: Android APK (Debug)
     max_build_duration: 60
     instance_type: mac_mini_m2
 
     environment:
+      # Versão do Flutter a usar (ajuste se quiser '3.24.x' etc.)
       flutter: stable
-      xcode: latest
-      android: latest
-      java: 17
+      # Variáveis úteis
       vars:
-        # Usado para gerar local.properties caso falte
-        ANDROID_SDK_DIR: $ANDROID_SDK_ROOT
-        FLUTTER_SDK_DIR: $FCI_FLUTTER_PATH
-
-    cache:
-      cache_paths:
-        - ~/.pub-cache
-        - ~/.gradle/caches
-        - ~/.gradle/wrapper
+        ANDROID_HOME: /usr/local/share/android-sdk
 
     scripts:
-      # 1) Checagem rápida de versões/arquivos (debug de ambiente)
-      - name: Print ambiente
+      # (Opcional) Log de arquivos-chave pra garantir que o CI está lendo suas mudanças
+      - name: Show important project files
         script: |
-          echo "Flutter: $(flutter --version)"
-          echo "Java: $(java -version 2>&1 | head -n1)"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-          echo "FCI_FLUTTER_PATH=$FCI_FLUTTER_PATH"
-          echo "PWD=$(pwd)"
-
-      # 2) Instala SDK Platform 36 e Build-tools 34 (pedidos pelos plugins)
-      - name: Instalar Android SDKs necessários
-        script: |
-          yes | sdkmanager --licenses || true
-          yes | sdkmanager "platforms;android-36" "build-tools;34.0.0"
-
-      # 3) Garante android/local.properties
-      - name: Garantir local.properties
-        script: |
-          mkdir -p android
-          echo "sdk.dir=${ANDROID_SDK_DIR}" > android/local.properties
-          echo "flutter.sdk=${FLUTTER_SDK_DIR}" >> android/local.properties
+          echo "=== android/settings.gradle ==="
+          cat android/settings.gradle
+          echo "=== android/app/build.gradle ==="
+          cat android/app/build.gradle
           echo "=== android/local.properties ==="
-          cat android/local.properties
+          cat android/local.properties || true
 
-      # 4) Garantir AGP 8.6.0 e Kotlin 2.1.0 no settings.gradle
-      - name: Ajustar settings.gradle (AGP/Kotlin)
+      # Aceita licenças do SDK
+      - name: Accept Android SDK licenses
         script: |
-          echo "=== Antes (settings.gradle) ==="
-          sed -n '1,200p' android/settings.gradle || true
+          yes | "$ANDROID_HOME"/cmdline-tools/latest/bin/sdkmanager --licenses
 
-          # Seta Kotlin Gradle plugin 2.1.0
-          perl -0777 -pe 's/id "org\.jetbrains\.kotlin\.android"\s+version\s+"[^"]+"/id "org.jetbrains.kotlin.android" version "2.1.0"/' -i android/settings.gradle
-
-          # Seta Android Gradle Plugin 8.6.0
-          perl -0777 -pe 's/id "com\.android\.application"\s+version\s+"[^"]+"/id "com.android.application" version "8.6.0"/' -i android/settings.gradle
-
-          echo "=== Depois (settings.gradle) ==="
-          sed -n '1,200p' android/settings.gradle || true
-
-      # 5) Forçar compileSdk = 36 e remover stdlib direta
-      - name: Ajustar app/build.gradle (compileSdk 36 e remover stdlib)
+      # Instala Platform 36, Build-Tools 34 e NDK 26.1 (plugins pediam isso)
+      - name: Install Android SDK/NDK
         script: |
-          echo "=== Antes (app/build.gradle) ==="
-          sed -n '1,200p' android/app/build.gradle || true
+          yes | "$ANDROID_HOME"/cmdline-tools/latest/bin/sdkmanager \
+            "platforms;android-36" \
+            "build-tools;34.0.0" \
+            "platform-tools" \
+            "ndk;26.1.10909125"
 
-          # compileSdk 36
-          perl -0777 -pe 's/compileSdk\s*\d+/compileSdk 36/g' -i android/app/build.gradle
+      # Limpa caches de Kotlin/Gradle pra evitar conflito entre versões (2.2.0 vs 2.0.x)
+      - name: Clean Gradle/Kotlin caches
+        script: |
+          rm -rf ~/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin || true
+          rm -rf ~/.gradle/caches/transforms-* ~/.gradle/caches/jars-* || true
+          flutter clean
 
-          # Remover linha explícita de kotlin-stdlib (se existir)
-          sed -i.bak '/kotlin-stdlib/d' android/app/build.gradle || true
-          rm -f android/app/build.gradle.bak
-
-          echo "=== Depois (app/build.gradle) ==="
-          sed -n '1,200p' android/app/build.gradle || true
-          echo "compileSdk encontrado:"
-          grep -n "compileSdk" android/app/build.gradle || true
-
-      # 6) Pub get
+      # Resolve dependências
       - name: Flutter pub get
         script: flutter pub get
 
-      # 7) Build APK por ABI (release)
-      - name: Build APK (split per ABI)
-        script: |
-          flutter build apk --release --split-per-abi
-          ls -R build/app/outputs || true
+      # Compila APK (debug) separado por ABI
+      - name: Build APK (debug split per ABI)
+        script: flutter build apk --debug --split-per-abi
 
     artifacts:
-      - build/app/outputs/apk/release/*.apk
-      - build/app/outputs/flutter-apk/*-release.apk
+      - build/app/outputs/flutter-apk/*.apk
+
+    publishing:
+      # (Opcional) Envia por e-mail o artefato
+      email:
+        recipients:
+          - seu-email@exemplo.com
+        notify:
+          success: true
+          failure: true
