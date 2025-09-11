@@ -1,7 +1,7 @@
 // android/settings.gradle
 
 pluginManagement {
-    // Descobre o caminho do SDK do Flutter por FLUTTER_HOME ou local.properties
+    // Descobre o caminho do SDK do Flutter via FLUTTER_HOME ou android/local.properties
     def flutterSdkPath = System.getenv("FLUTTER_HOME")
     if (flutterSdkPath == null) {
         def props = new Properties()
@@ -22,31 +22,31 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
-        maven { url = "https://storage.googleapis.com/download.flutter.io" }
+        maven { url = uri("https://storage.googleapis.com/download.flutter.io") }
     }
 
-    // **VERSÕES DO TOOLCHAIN**
+    // Versões dos plugins
     plugins {
-        id "com.android.application" version "8.6.1"
-        id "com.android.library"     version "8.6.1"
-        id "org.jetbrains.kotlin.android" version "2.0.21" // ≥ 2.0 recomendado pelo Flutter
-        // Não defina versão para o loader do Flutter; vem do includeBuild acima
+        id "com.android.application" version "8.6.0"
+        id "org.jetbrains.kotlin.android" version "2.2.0"
+        // o loader do Flutter é resolvido pelo includeBuild acima (não precisa de versão aqui)
     }
 }
 
-// Aplica o loader do Flutter e não aplica os outros aqui
+// Aplica o loader do Flutter e não aplica os demais aqui
 plugins {
     id "dev.flutter.flutter-plugin-loader"
     id "com.android.application" apply false
     id "org.jetbrains.kotlin.android" apply false
 }
 
+// Centraliza repositórios e impede sobrescrita em subprojetos
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         google()
         mavenCentral()
-        maven { url = "https://storage.googleapis.com/download.flutter.io" }
+        maven { url = uri("https://storage.googleapis.com/download.flutter.io") }
     }
 }
 
