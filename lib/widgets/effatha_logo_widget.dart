@@ -56,20 +56,22 @@ class EffathaLogoWidget extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    
-    // Calculate responsive dimensions
-    // Medium vs Large are inferred from padding (medium=12, large=20)
-    final bool isLarge = (padding.horizontal >= 40.0) || (padding.vertical >= 40.0);
+    // Medium vs Large inferred by padding (>= 40 → large)
+    final bool isLarge =
+        (padding.horizontal >= 40.0) || (padding.vertical >= 40.0);
 
-    // Base size using screen width (Sizer)
-    final double baseSizeW = isLarge ? 28.w : 20.w; // larger on 'large'
-    final double maxSize = isLarge ? 220.0 : 120.0; // clamp to keep layout stable
+    // Base responsive size using Sizer
+    final double baseSizeW = isLarge ? 28.w : 20.w;
+    final double maxSize = isLarge ? 220.0 : 120.0;
     final double targetSize = baseSizeW > maxSize ? maxSize : baseSizeW;
 
     final double logoWidth = width ?? (showContainer ? targetSize : 24.0);
     final double logoHeight = height ?? (showContainer ? targetSize : 24.0);
 
-    Widget logoImage = Container(
+    // Single asset path (ajuste o nome se necessário)
+    final String assetPath = 'assets/images/logo_effatha-1757471503560.png';
+
+    Widget logoImage = ConstrainedBox(
       constraints: BoxConstraints(
         maxWidth: logoWidth,
         maxHeight: logoHeight,
@@ -77,15 +79,7 @@ class EffathaLogoWidget extends StatelessWidget {
         minHeight: showContainer ? 60 : 20,
       ),
       child: Image.asset(
-         Container(
-      constraints: BoxConstraints(
-        maxWidth: logoWidth,
-        maxHeight: logoHeight,
-        minWidth: showContainer ? 60 : 20,
-        minHeight: showContainer ? 60 : 20,
-      ),
-      child: Image.asset(
-        'assets/images/logo_effatha-1757471503560.png',
+        assetPath,
         width: logoWidth,
         height: logoHeight,
         fit: BoxFit.contain,
@@ -99,7 +93,7 @@ class EffathaLogoWidget extends StatelessWidget {
       ),
     );
 
-    // Apply hero animation if specified
+    // Hero animation (opcional)
     if (heroTag != null) {
       logoImage = Hero(
         tag: heroTag!,
@@ -107,13 +101,13 @@ class EffathaLogoWidget extends StatelessWidget {
       );
     }
 
-    // Apply padding
+    // Padding externo
     logoImage = Padding(
       padding: padding,
       child: logoImage,
     );
 
-    // Apply container decoration if specified
+    // Container decorado (opcional)
     if (showContainer) {
       logoImage = Container(
         decoration: BoxDecoration(
