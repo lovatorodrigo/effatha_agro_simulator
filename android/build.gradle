@@ -1,5 +1,5 @@
-// android/build.gradle — raiz (Groovy)
-// Sem buildscript {}, sem ext.kotlin_version, sem repositories {}
+// android/build.gradle — intencionalmente mínimo
+// Toda a config de plugins/repos está em settings.gradle
 
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
