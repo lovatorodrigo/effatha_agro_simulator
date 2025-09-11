@@ -1,8 +1,11 @@
-// Build de nível de projeto – sem buildscript antigo.
-// Repositórios para quaisquer módulos adicionais.
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
+// Arquivo de nível raiz
+
+buildscript {
+    ext.kotlin_version = "1.9.24"
+    // NÃO declare repositories aqui (usar apenas no settings.gradle)
+    // NÃO declare classpath do AGP aqui (usamos plugins DSL no settings/app)
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
 }
