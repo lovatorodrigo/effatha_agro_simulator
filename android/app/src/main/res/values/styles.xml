@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <!-- Mostrado enquanto o app inicia (splash) -->
-    <style name="LaunchTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Drawable do splash; o Flutter remove quando desenha o 1º frame -->
+    <!-- Splash/Launch enquanto carrega o Flutter -->
+    <style name="LaunchTheme" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:windowBackground">@drawable/launch_background</item>
     </style>
 
-    <!-- Tema usado por trás do Flutter UI depois que o processo inicia -->
-    <style name="NormalTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Mantém a cor de fundo padrão do sistema -->
+    <!-- Tema base após iniciar (embedding v2) -->
+    <style name="NormalTheme" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:windowBackground">?android:colorBackground</item>
     </style>
-
 </resources>
