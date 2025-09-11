@@ -18,12 +18,12 @@ class AppRoutes {
   static const String registration = '/registration-screen';
 
   static Map<String, WidgetBuilder> routes = {
-    initial: (context) => const LoginScreen(),
-    passwordReset: (context) => const PasswordResetScreen(),
-    settings: (context) => const SettingsScreen(),
-    exportResults: (context) => const ExportResultsScreen(),
-    login: (context) => const LoginScreen(),
-    simulationDashboard: (context) => const SimulationDashboard(),
-    registration: (context) => const RegistrationScreen(),
+    initial: (context) => LoginScreen(),
+    passwordReset: (context) => PasswordResetScreen(),
+    settings: (context) => SettingsScreen(),
+    exportResults: (context) => ExportResultsScreen(),
+    login: (context) => LoginScreen(),
+    simulationDashboard: (context) => SimulationDashboard(),
+    registration: (context) => RegistrationScreen(),
   };
 }
