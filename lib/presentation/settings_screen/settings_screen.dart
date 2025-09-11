@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
@@ -55,7 +54,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _isManualExchangeMode =
             prefs.getBool('is_manual_exchange_mode') ?? false;
 
-        // Load exchange rates (mantidos se você ainda quiser modo manual)
+        // Taxas de câmbio (mantidas para modo manual, se necessário)
         _exchangeRates['USD'] = prefs.getDouble('exchange_rate_USD') ?? 5.2;
         _exchangeRates['EUR'] = prefs.getDouble('exchange_rate_EUR') ?? 5.8;
         _exchangeRates['GBP'] = prefs.getDouble('exchange_rate_GBP') ?? 6.5;
@@ -79,13 +78,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await prefs.setDouble('kg_per_sack_weight', _kgPerSackWeight);
       await prefs.setBool('is_manual_exchange_mode', _isManualExchangeMode);
 
-      // Save exchange rates
+      // Salvar taxas
       for (final entry in _exchangeRates.entries) {
         await prefs.setDouble('exchange_rate_${entry.key}', entry.value);
       }
-    } catch (e) {
-      // Handle error silently
-    }
+    } catch (_) {}
   }
 
   Locale _localeFromCode(String code) {
@@ -113,191 +110,191 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return AppBackground(
       assetPath: 'assets/images/bg_sim_soy.jpg',
-      child:  return Scaffold(
+      child: Scaffold(
+        // Mantemos transparente porque o AppBackground cuida do fundo
         backgroundColor: Colors.transparent,
-      backgroundColor:
-          isDark ? AppTheme.backgroundDark : AppTheme.backgroundLight,
-      appBar: AppBar(
-        title: Text(
-          t.settings,
-          style: theme.appBarTheme.titleTextStyle,
-        ),
-        backgroundColor: isDark ? AppTheme.surfaceDark : AppTheme.primaryLight,
-        foregroundColor:
-            isDark ? AppTheme.textPrimaryDark : AppTheme.onPrimaryLight,
-        elevation: 2,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: CustomIconWidget(
-            iconName: 'arrow_back',
-            color: isDark ? AppTheme.textPrimaryDark : AppTheme.onPrimaryLight,
-            size: 24,
+        appBar: AppBar(
+          title: Text(
+            t.settings,
+            style: theme.appBarTheme.titleTextStyle,
+          ),
+          backgroundColor: isDark ? AppTheme.surfaceDark : AppTheme.primaryLight,
+          foregroundColor:
+              isDark ? AppTheme.textPrimaryDark : AppTheme.onPrimaryLight,
+          elevation: 2,
+          leading: IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: CustomIconWidget(
+              iconName: 'arrow_back',
+              color: isDark ? AppTheme.textPrimaryDark : AppTheme.onPrimaryLight,
+              size: 24,
+            ),
           ),
         ),
-      ),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(
-                color: isDark ? AppTheme.primaryDark : AppTheme.primaryLight,
-              ),
-            )
-          : SingleChildScrollView(
-              padding: EdgeInsets.all(4.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header section
-                  Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.h),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          t.settings,
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: isDark
-                                ? AppTheme.textPrimaryDark
-                                : AppTheme.textPrimaryLight,
+        body: _isLoading
+            ? Center(
+                child: CircularProgressIndicator(
+                  color: isDark ? AppTheme.primaryDark : AppTheme.primaryLight,
+                ),
+              )
+            : SingleChildScrollView(
+                padding: EdgeInsets.all(4.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header section
+                    Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.h),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            t.settings,
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: isDark
+                                  ? AppTheme.textPrimaryDark
+                                  : AppTheme.textPrimaryLight,
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 1.h),
-                        Text(
-                          'Customize your agricultural simulation experience',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: isDark
-                                ? AppTheme.textSecondaryDark
-                                : AppTheme.textSecondaryLight,
+                          SizedBox(height: 1.h),
+                          Text(
+                            'Customize your agricultural simulation experience',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: isDark
+                                  ? AppTheme.textSecondaryDark
+                                  : AppTheme.textSecondaryLight,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: 2.h),
-
-                  // Area Units Settings
-                  AreaUnitsSelectorWidget(
-                    selectedUnit: _selectedAreaUnit,
-                    onUnitChanged: (unit) {
-                      setState(() {
-                        _selectedAreaUnit = unit;
-                      });
-                      _saveSettings();
-                    },
-                  ),
-
-                  SizedBox(height: 3.h),
-
-                  // Language Settings
-                  LanguageSelectorWidget(
-                    selectedLanguage: _selectedLanguage,
-                    onLanguageChanged: (language) async {
-                      setState(() {
-                        _selectedLanguage = language; // 'pt_BR' | 'en_US'
-                      });
-                      await _saveSettings();
-                      await _applyLanguage(language);
-                    },
-                  ),
-
-                  SizedBox(height: 3.h),
-
-                  // Weight Input Settings (kg/sack)
-                  WeightInputWidget(
-                    currentWeight: _kgPerSackWeight,
-                    onWeightChanged: (weight) {
-                      setState(() {
-                        _kgPerSackWeight = weight;
-                      });
-                      _saveSettings();
-                    },
-                  ),
-
-                  SizedBox(height: 3.h),
-
-                  // Exchange Rate Settings (opcional, se mantiver o modo manual)
-                  ExchangeRateWidget(
-                    isManualMode: _isManualExchangeMode,
-                    exchangeRates: _exchangeRates,
-                    onModeChanged: (isManual) {
-                      setState(() {
-                        _isManualExchangeMode = isManual;
-                      });
-                      _saveSettings();
-                    },
-                    onRateChanged: (currency, rate) {
-                      setState(() {
-                        _exchangeRates[currency] = rate;
-                      });
-                      _saveSettings();
-                    },
-                  ),
-
-                  SizedBox(height: 4.h),
-
-                  // Section divider
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 2.w),
-                    child: Text(
-                      'Account',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: isDark
-                            ? AppTheme.textPrimaryDark
-                            : AppTheme.textPrimaryLight,
+                        ],
                       ),
                     ),
-                  ),
 
-                  SizedBox(height: 2.h),
+                    SizedBox(height: 2.h),
 
-                  // Account Settings
-                  AccountSectionWidget(
-                    onLogout: _handleLogout,
-                  ),
-
-                  SizedBox(height: 4.h),
-
-                  // Reset to Defaults
-                  ResetDefaultsWidget(
-                    onResetDefaults: _resetToDefaults,
-                  ),
-
-                  SizedBox(height: 4.h),
-
-                  // App info
-                  Center(
-                    child: Column(
-                      children: [
-                        Text(
-                          'Effatha Agro Simulator',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: isDark
-                                ? AppTheme.textSecondaryDark
-                                : AppTheme.textSecondaryLight,
-                          ),
-                        ),
-                        SizedBox(height: 0.5.h),
-                        Text(
-                          'Version 1.0.0',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: isDark
-                                ? AppTheme.textSecondaryDark
-                                : AppTheme.textSecondaryLight,
-                          ),
-                        ),
-                      ],
+                    // Area Units Settings
+                    AreaUnitsSelectorWidget(
+                      selectedUnit: _selectedAreaUnit,
+                      onUnitChanged: (unit) {
+                        setState(() {
+                          _selectedAreaUnit = unit;
+                        });
+                        _saveSettings();
+                      },
                     ),
-                  ),
 
-                  SizedBox(height: 2.h),
-                ],
+                    SizedBox(height: 3.h),
+
+                    // Language Settings
+                    LanguageSelectorWidget(
+                      selectedLanguage: _selectedLanguage,
+                      onLanguageChanged: (language) async {
+                        setState(() {
+                          _selectedLanguage = language; // 'pt_BR' | 'en_US'
+                        });
+                        await _saveSettings();
+                        await _applyLanguage(language);
+                      },
+                    ),
+
+                    SizedBox(height: 3.h),
+
+                    // Weight Input Settings (kg/sack)
+                    WeightInputWidget(
+                      currentWeight: _kgPerSackWeight,
+                      onWeightChanged: (weight) {
+                        setState(() {
+                          _kgPerSackWeight = weight;
+                        });
+                        _saveSettings();
+                      },
+                    ),
+
+                    SizedBox(height: 3.h),
+
+                    // Exchange Rate Settings (opcional)
+                    ExchangeRateWidget(
+                      isManualMode: _isManualExchangeMode,
+                      exchangeRates: _exchangeRates,
+                      onModeChanged: (isManual) {
+                        setState(() {
+                          _isManualExchangeMode = isManual;
+                        });
+                        _saveSettings();
+                      },
+                      onRateChanged: (currency, rate) {
+                        setState(() {
+                          _exchangeRates[currency] = rate;
+                        });
+                        _saveSettings();
+                      },
+                    ),
+
+                    SizedBox(height: 4.h),
+
+                    // Section divider
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 2.w),
+                      child: Text(
+                        'Account',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? AppTheme.textPrimaryDark
+                              : AppTheme.textPrimaryLight,
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: 2.h),
+
+                    // Account Settings
+                    AccountSectionWidget(
+                      onLogout: _handleLogout,
+                    ),
+
+                    SizedBox(height: 4.h),
+
+                    // Reset to Defaults
+                    ResetDefaultsWidget(
+                      onResetDefaults: _resetToDefaults,
+                    ),
+
+                    SizedBox(height: 4.h),
+
+                    // App info
+                    Center(
+                      child: Column(
+                        children: [
+                          Text(
+                            'Effatha Agro Simulator',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: isDark
+                                  ? AppTheme.textSecondaryDark
+                                  : AppTheme.textSecondaryLight,
+                            ),
+                          ),
+                          SizedBox(height: 0.5.h),
+                          Text(
+                            'Version 1.0.0',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: isDark
+                                  ? AppTheme.textSecondaryDark
+                                  : AppTheme.textSecondaryLight,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: 2.h),
+                  ],
+                ),
               ),
-            ),
-    ););
+      ),
+    );
   }
 
   void _resetToDefaults() {
