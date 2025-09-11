@@ -1,7 +1,7 @@
 plugins {
     id "com.android.application"
     id "org.jetbrains.kotlin.android"
-    // Plugin do Flutter para app Android
+    // Plugin do Flutter (carregado via includeBuild no settings.gradle)
     id "dev.flutter.flutter-gradle-plugin"
 }
 
@@ -11,8 +11,8 @@ android {
 
     defaultConfig {
         applicationId "com.effatha_agro_simulator.app"
-        minSdk 23
-        targetSdk 34
+        minSdkVersion 23
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -20,31 +20,21 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
-            shrinkResources false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            // ajuste o signingConfig quando for assinar de verdade
+            // Ajuste o signingConfig para o seu keystore quando for gerar release
             signingConfig signingConfigs.debug
+            minifyEnabled false
         }
-        debug {
-        }
+        debug { }
     }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
-    packaging {
+    packagingOptions {
         resources {
-            excludes += ["META-INF/AL2.0", "META-INF/LGPL2.1"]
+            excludes += ["/META-INF/{AL2.0,LGPL2.1}"]
         }
     }
 }
 
-flutter {
-    source '../..'
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.24"
+    // Evite declarar repositórios aqui (proibido com FAIL_ON_PROJECT_REPOS)
 }
