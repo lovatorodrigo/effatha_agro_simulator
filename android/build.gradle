@@ -1,11 +1,5 @@
-// Arquivo de nível raiz
-
-buildscript {
-    ext.kotlin_version = "1.9.24"
-    // NÃO declare repositories aqui (usar apenas no settings.gradle)
-    // NÃO declare classpath do AGP aqui (usamos plugins DSL no settings/app)
-}
+// Top-level Gradle file (não declarar repositories aqui)
 
 tasks.register("clean", Delete) {
-    delete rootProject.buildDir
+    delete(rootProject.buildDir)
 }
