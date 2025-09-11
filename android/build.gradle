@@ -1,11 +1,4 @@
-// android/build.gradle — raiz do projeto Android (Groovy)
-
-plugins {
-    id "com.android.application" version "8.6.0" apply false
-    id "org.jetbrains.kotlin.android" version "2.1.0" apply false
-    // Nada de repositories aqui; fica tudo no settings.gradle
-}
-
+// android/build.gradle (root) — minimalista
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
