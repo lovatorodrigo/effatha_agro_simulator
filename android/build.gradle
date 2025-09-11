@@ -2,8 +2,8 @@
 
 plugins {
     id "com.android.application" version "8.6.0" apply false
-    id "org.jetbrains.kotlin.android" version "1.9.24" apply false
-    // NADA de repositories aqui; tudo fica no settings.gradle
+    id "org.jetbrains.kotlin.android" version "2.1.0" apply false
+    // Nada de repositories aqui; fica tudo no settings.gradle
 }
 
 tasks.register("clean", Delete) {
