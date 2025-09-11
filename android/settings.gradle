@@ -1,25 +1,60 @@
-// android/settings.gradle — Gradle 8.x + AGP 8.6 + Flutter plugin loader (Groovy)
+// android/settings.gradle — Flutter + Gradle 8.x (Groovy)
 
 pluginManagement {
     repositories {
         google()
         mavenCentral()
         gradlePluginPortal()
+        // Repositório dos artefatos do Flutter (AARs etc.)
         maven { url = "https://storage.googleapis.com/download.flutter.io" }
     }
+
+    // Descobrir o caminho do SDK do Flutter
+    def flutterSdkPath = null
+
+    // 1) local.properties (geralmente criado pelo Flutter)
+    def propsFile = file("local.properties")
+    if (propsFile.exists()) {
+        def props = new Properties()
+        props.load(new FileInputStream(propsFile))
+        flutterSdkPath = props.getProperty("flutter.sdk")
+    }
+
+    // 2) Variáveis de ambiente (útil no CI)
+    if (!flutterSdkPath) {
+        flutterSdkPath = System.getenv("FLUTTER_HOME") ?: System.getenv("FLUTTER_SDK")
+    }
+
+    // 3) Caminho padrão do Codemagic
+    if (!flutterSdkPath) {
+        def cm = "/Users/builder/programs/flutter"
+        if (new File(cm).exists()) flutterSdkPath = cm
+    }
+
+    if (!flutterSdkPath) {
+        throw new GradleException(
+            "Flutter SDK não encontrado. Defina 'flutter.sdk' em android/local.properties " +
+            "ou exporte FLUTTER_HOME/FLUTTER_SDK."
+        )
+    }
+
+    // Isto “instala” o plugin do Flutter a partir do SDK local (não baixa da internet)
+    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+
+    // Versões dos plugins usados nos módulos (assim, no app/build.gradle não precisa versão)
     plugins {
         id "com.android.application" version "8.6.0"
         id "org.jetbrains.kotlin.android" version "2.1.0"
-        // Carrega a integração do Flutter para projetos de app
-        id "dev.flutter.flutter-plugin-loader" version "1.0.0"
     }
 }
 
+// Ativa o “loader” do Flutter (resolvido pelo includeBuild acima, sem versão)
 plugins {
     id "dev.flutter.flutter-plugin-loader"
 }
 
 dependencyResolutionManagement {
+    // Evita repositórios declarados dentro dos módulos
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
