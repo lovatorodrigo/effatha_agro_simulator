@@ -1,7 +1,7 @@
 pluginManagement {
-    // Descobre o caminho do Flutter SDK (via FLUTTER_SDK ou local.properties)
+    // Descobre o caminho do Flutter SDK (ENV ou local.properties)
     def flutterSdkPath = System.getenv("FLUTTER_SDK")
-    if (flutterSdkPath == null || flutterSdkPath.isEmpty()) {
+    if (!flutterSdkPath) {
         def props = new Properties()
         def f = new File(rootDir, "local.properties")
         if (f.exists()) {
@@ -11,7 +11,6 @@ pluginManagement {
     }
     assert flutterSdkPath != null : "Flutter SDK não encontrado. Defina FLUTTER_SDK ou adicione flutter.sdk ao android/local.properties"
 
-    // Necessário para o plugin do Flutter
     includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
 
     repositories {
@@ -19,8 +18,6 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
-
-    // Versões dos plugins
     plugins {
         id "com.android.application" version "8.6.0"
         id "org.jetbrains.kotlin.android" version "1.9.24"
@@ -29,11 +26,14 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
-    // SOMENTE settings.gradle pode declarar repositórios
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    // NÃO usar FAIL_ON_PROJECT_REPOS aqui
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         google()
         mavenCentral()
+        // Adiciona o repositório do engine do Flutter no nível de settings,
+        // assim o plugin não precisa injetar no projeto.
+        maven { url = uri("$flutterSdkPath/bin/cache/artifacts/engine") }
     }
 }
 
