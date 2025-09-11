@@ -2,19 +2,19 @@
 
 plugins {
     id "com.android.application"
-    id "org.jetbrains.kotlin.android"        // versão vem do settings.gradle
+    id "org.jetbrains.kotlin.android"
     id "dev.flutter.flutter-gradle-plugin"
 }
 
 android {
     namespace "com.effatha_agro_simulator.app"
-    // Plugins (connectivity_plus, share_plus, etc.) pedem 36
+
+    // Plugins e androidx.core 1.16.0 pedem 35+; use 36 para ficar tranquilo
     compileSdk 36
 
     defaultConfig {
         applicationId "com.effatha_agro_simulator.app"
         minSdk 21
-        // Pode manter 34 como target (não precisa ser 36)
         targetSdk 34
 
         versionCode 1
@@ -29,7 +29,7 @@ android {
             shrinkResources false
         }
         release {
-            // shrinkResources exige minifyEnabled = true (R8)
+            // shrinkResources exige minifyEnabled = true
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
@@ -48,10 +48,8 @@ android {
 }
 
 dependencies {
-    // NÃO coloque kotlin-stdlib aqui; o plugin já injeta a correta.
-    // implementation "org.jetbrains.kotlin:kotlin-stdlib:xxx"   <-- mantenha REMOVIDO
-
-    // Para os temas do styles.xml
+    // **NÃO** adicione kotlin-stdlib manualmente (o plugin de Kotlin já traz)
+    // Temas usados em styles.xml:
     implementation "androidx.core:core-ktx:1.16.0"
     implementation "androidx.appcompat:appcompat:1.7.0"
     implementation "com.google.android.material:material:1.12.0"
