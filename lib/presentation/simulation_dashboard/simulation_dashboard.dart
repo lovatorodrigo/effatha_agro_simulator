@@ -22,7 +22,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     with TickerProviderStateMixin {
   late TabController _tabController;
 
-  // Form data (strings da UI)
+  // Form data
   String _selectedCrop = 'soy';
   String _area = '100';
   String _historicalProductivity = '60';
@@ -32,23 +32,24 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   String _additionalProductivity = '15';
 
   // Settings
-  String _currency = 'USD'; // mantido, mas formatamos sempre como $ no _fmtMoney
-  double _kgPerSackWeight = 60.0; // peso padrão da saca
+  String _currency = 'USD';
+  double _kgPerSackWeight = 60.0;
   String _priceUnit = r'$/sack';
   String _areaUnit = 'hectares';
   String _productivityUnit = 'sacks/ha';
-  double _exchangeRate = 1.0; // ignorado nos cálculos (apenas $), mantido p/ futuro
+  double _exchangeRate = 1.0;
 
   // Per-parameter units (configuráveis)
   String _costUnit = r'$/ha';
   String _investmentUnit = r'$/ha';
   String _additionalProductivityUnit = 'sacks/ha';
 
+
   // Results
   Map<String, dynamic> _traditionalResults = {};
   Map<String, dynamic> _effathaResults = {};
 
-  // Imagens de fundo por cultura
+  // Mock data for background images
   final Map<String, String> _cropBackgrounds = {
     'soy': 'assets/images/bg_sim_soy.jpg',
     'corn': 'assets/images/bg_sim_corn.jpg',
@@ -67,19 +68,20 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     _calculateResults();
   }
 
+  @override
+
   Future<void> _loadKgPerSack() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final k = prefs.getDouble('kg_per_sack_weight');
       if (k != null && k > 0) {
-        setState(() {
-          _kgPerSackWeight = k;
-        });
+        setState(() { _kgPerSackWeight = k; });
       }
     } catch (_) {}
   }
 
-  // Formatações: $ com pt_BR e % com vírgula
+
+  // Formatting helpers: $ with pt_BR thousands/decimals and % with comma.
   String _fmtMoney(double value) {
     final f = NumberFormat.currency(locale: 'pt_BR', symbol: r'$ ', decimalDigits: 2);
     return f.format(value);
@@ -90,11 +92,11 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     return '${NumberFormat.decimalPattern('pt_BR').format(rounded)}%';
   }
 
-  @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
   }
+
 
   String _formatTotalProduction(double totalKg) {
     switch (_productivityUnit) {
@@ -111,36 +113,63 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   }
 
   void _calculateResults() {
-    // Leitura segura dos campos numéricos
-    final areaInput = double.tryParse(_area.replaceAll(',', '.')) ?? 0.0;
-    final prodInput = double.tryParse(_historicalProductivity.replaceAll(',', '.')) ?? 0.0;
-    final costsInput = double.tryParse(_historicalCosts.replaceAll(',', '.')) ?? 0.0;
-    final priceInput = double.tryParse(_cropPrice.replaceAll(',', '.')) ?? 0.0;
-    final investInput = double.tryParse(_effathaInvestment.replaceAll(',', '.')) ?? 0.0;
-    final addProdInput = double.tryParse(_additionalProductivity.replaceAll(',', '.')) ?? 0.0;
+    final area = double.tryParse(_area) ?? 0;
+    final productivity = double.tryParse(_historicalProductivity) ?? 0;
+    final costs = double.tryParse(_historicalCosts) ?? 0;
+    final price = double.tryParse(_cropPrice) ?? 0;
+    final investment = double.tryParse(_effathaInvestment) ?? 0;
+    final additionalProd = double.tryParse(_additionalProductivity) ?? 0;
 
-    // Converte para base: ha, kg/ha e $/ha
+    // Traditional calculations
+    final traditionalProduction = areaHa * productivityPerHa;
+    final traditionalRevenue = traditionalProductionKg * pricePerKg;
+    final traditionalTotalCosts = areaHa * costsPerHa;
+    final traditionalProfit = traditionalRevenue - traditionalTotalCosts;
+    final traditionalProfitability = traditionalTotalCosts > 0
+        ? (traditionalProfit / traditionalTotalCosts) * 100
+        : 0;
+
+    // Effatha calculations
+    final effathaProduction = areaHa * (productivityPerHa + additionalProdPerHa);
+    final effathaRevenue = effathaProductionKg * pricePerKg;
+    final effathaInvestmentTotal = areaHa * investmentPerHa;
+    final effathaTotalCosts = areaHa * (costsPerHa + investmentPerHa);
+    final effathaProfit = effathaRevenue - effathaTotalCosts;
+    final effathaProfitability =
+        effathaTotalCosts > 0 ? (effathaProfit / effathaTotalCosts) * 100 : 0;
+
+    // Additional calculations
+    final additionalProfit = effathaProfit - traditionalProfit;
+    final additionalProfitPercent = traditionalProfit > 0
+        ? (additionalProfit / traditionalProfit) * 100
+        : 0;
+    final roi = effathaInvestmentTotal > 0
+        ? (additionalProfit / effathaInvestmentTotal) * 100
+        : 0;
+    
+    
+    // Convert units to base (ha, kg/ha, $/ha)
     const double acresPerHectare = 2.47105;
 
-    // Área em ha
-    final double areaHa = _areaUnit == 'acres' ? (areaInput / acresPerHectare) : areaInput;
+    // area in ha
+    final double areaHa = _areaUnit == 'acres' ? (area / acresPerHectare) : area;
 
-    // Preço por kg
+    // price per kg from user-selected unit
     double pricePerKg;
     switch (_priceUnit) {
       case r'$/kg':
-        pricePerKg = priceInput;
+        pricePerKg = price;
         break;
       case r'$/t':
-        pricePerKg = priceInput / 1000.0;
+        pricePerKg = price / 1000.0;
         break;
       case r'$/sack':
       default:
-        pricePerKg = _kgPerSackWeight > 0 ? priceInput / _kgPerSackWeight : 0.0;
+        pricePerKg = price / _kgPerSackWeight;
         break;
     }
 
-    // Conversores
+    // converters to kg/ha and $/ha
     double toKgPerHa(double value, String unit) {
       switch (unit) {
         case 'kg/ha':
@@ -171,43 +200,22 @@ class _SimulationDashboardState extends State<SimulationDashboard>
       }
     }
 
-    // Valores em base
-    final double productivityKgPerHa = toKgPerHa(prodInput, _productivityUnit);
-    final double additionalProdKgPerHa = toKgPerHa(addProdInput, _additionalProductivityUnit);
-    final double costsPerHa = toDollarsPerHa(costsInput, _costUnit);
-    final double investmentPerHa = toDollarsPerHa(investInput, _investmentUnit);
-
-    // Cálculos tradicionais
-    final double traditionalProductionKg = areaHa * productivityKgPerHa;
-    final double traditionalRevenue = traditionalProductionKg * pricePerKg;
-    final double traditionalTotalCosts = areaHa * costsPerHa;
-    final double traditionalProfit = traditionalRevenue - traditionalTotalCosts;
-    final double traditionalProfitability =
-        traditionalTotalCosts > 0 ? (traditionalProfit / traditionalTotalCosts) * 100 : 0.0;
-
-    // Cálculos Effatha
-    final double effathaProductionKg = areaHa * (productivityKgPerHa + additionalProdKgPerHa);
-    final double effathaRevenue = effathaProductionKg * pricePerKg;
-    final double effathaInvestmentTotal = areaHa * investmentPerHa;
-    final double effathaTotalCosts = areaHa * (costsPerHa + investmentPerHa);
-    final double effathaProfit = effathaRevenue - effathaTotalCosts;
-    final double effathaProfitability =
-        effathaTotalCosts > 0 ? (effathaProfit / effathaTotalCosts) * 100 : 0.0;
-
-    // Adicionais
-    final double additionalProfit = effathaProfit - traditionalProfit;
-    final double additionalProfitPercent =
-        traditionalProfit.abs() > 0 ? (additionalProfit / traditionalProfit) * 100 : 0.0;
-    final double roi =
-        effathaInvestmentTotal > 0 ? (additionalProfit / effathaInvestmentTotal) * 100 : 0.0;
-
+    final double productivityKgPerHa = toKgPerHa(productivity, _productivityUnit);
+    final double additionalProdKgPerHa = toKgPerHa(additionalProd, _additionalProductivityUnit);
+    final double costsPerHa = toDollarsPerHa(costs, _costUnit);
+    final double investmentPerHa = toDollarsPerHa(investment, _investmentUnit);
+    
     setState(() {
+      final additionalProfit = effathaProfit - traditionalProfit;
+      final additionalProfitPercent = traditionalProfit.abs() > 0
+          ? (additionalProfit / traditionalProfit) * 100
+          : 0.0;
+
       _traditionalResults = {
         'investmentTotal': _fmtMoney(traditionalTotalCosts),
         'productionTotal': _formatTotalProduction(traditionalProductionKg),
         'profitabilityPercent': _fmtPercent(traditionalProfitability),
-        // ROI tradicional ≈ rentabilidade tradicional
-        'roi': _fmtPercent(traditionalProfitability),
+        'roi': _fmtPercent(traditionalProfitability), // ROI tradicional ≈ rentabilidade tradicional
         'profit': traditionalProfit,
         'revenue': traditionalRevenue,
       };
@@ -223,6 +231,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         'revenue': effathaRevenue,
       };
     });
+
   }
 
   @override
@@ -273,7 +282,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
       ),
       floatingActionButton: _tabController.index == 0
           ? FloatingActionButton.extended(
-              onPressed: () => Navigator.pushNamed(context, '/export-results-screen'),
+              onPressed: () =>
+                  Navigator.pushNamed(context, '/export-results-screen'),
               icon: CustomIconWidget(
                 iconName: 'file_download',
                 color: AppTheme.onSecondaryLight,
@@ -285,7 +295,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                   color: AppTheme.onSecondaryLight,
                 ),
               ),
-              backgroundColor: isDark ? AppTheme.secondaryDark : AppTheme.secondaryLight,
+              backgroundColor:
+                  isDark ? AppTheme.secondaryDark : AppTheme.secondaryLight,
             )
           : null,
     );
@@ -363,7 +374,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
       },
       child: SingleChildScrollView(
         padding: EdgeInsets.all(4.w),
-        physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -379,16 +389,16 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             Text(
               'Comparison Overview',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    shadows: [
-                      const Shadow(
-                        color: Colors.black54,
-                        offset: Offset(0, 1),
-                        blurRadius: 2,
-                      ),
-                    ],
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                shadows: [
+                  const Shadow(
+                    color: Colors.black54,
+                    offset: Offset(0, 1),
+                    blurRadius: 2,
                   ),
+                ],
+              ),
             ),
             SizedBox(height: 2.h),
             Row(
@@ -412,31 +422,24 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             Text(
               'Input Parameters',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    shadows: [
-                      const Shadow(
-                        color: Colors.black54,
-                        offset: Offset(0, 1),
-                        blurRadius: 2,
-                      ),
-                    ],
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                shadows: [
+                  const Shadow(
+                    color: Colors.black54,
+                    offset: Offset(0, 1),
+                    blurRadius: 2,
                   ),
+                ],
+              ),
             ),
             SizedBox(height: 2.h),
-
-            // AREA
             InputCardWidget(
               title: 'Area',
               value: _area,
               unit: _areaUnit,
-              units: const ['hectares', 'acres'],
-              onUnitChanged: (u) {
-                setState(() {
-                  _areaUnit = u;
-                });
-                _calculateResults();
-              },
+              units: const ['hectares','acres'],
+              onUnitChanged: (u) { setState(() { _areaUnit = u; }); _calculateResults(); },
               hintText: 'Enter area',
               onChanged: (value) {
                 setState(() {
@@ -444,24 +447,17 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 });
                 _calculateResults();
               },
-              inputFormatters: <TextInputFormatter>[
+              inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
               ],
             ),
             SizedBox(height: 2.h),
-
-            // HISTORICAL PRODUCTIVITY
             InputCardWidget(
               title: 'Historical Productivity',
               value: _historicalProductivity,
               unit: _productivityUnit,
-              units: const ['sacks/ha', 'sacks/acre', 't/ha', 'kg/ha'],
-              onUnitChanged: (u) {
-                setState(() {
-                  _productivityUnit = u;
-                });
-                _calculateResults();
-              },
+              units: const ['sacks/ha','sacks/acre','t/ha','kg/ha'],
+              onUnitChanged: (u) { setState(() { _productivityUnit = u; }); _calculateResults(); },); _calculateResults(); },
               hintText: 'Enter productivity',
               onChanged: (value) {
                 setState(() {
@@ -469,24 +465,15 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 });
                 _calculateResults();
               },
-              inputFormatters: <TextInputFormatter>[
+              inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
               ],
             ),
             SizedBox(height: 2.h),
-
-            // HISTORICAL COSTS
             InputCardWidget(
               title: 'Historical Costs',
               value: _historicalCosts,
               unit: _costUnit,
-              units: const [r'$/ha', r'$/acre', 'sacks/ha', 'sacks/acre'],
-              onUnitChanged: (u) {
-                setState(() {
-                  _costUnit = u;
-                });
-                _calculateResults();
-              },
               hintText: 'Enter costs per area',
               onChanged: (value) {
                 setState(() {
@@ -494,49 +481,35 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 });
                 _calculateResults();
               },
-              inputFormatters: <TextInputFormatter>[
+              units: const [r'$/ha', r'$/acre', 'sacks/ha', 'sacks/acre'],
+              onUnitChanged: (u) { setState(() { _costUnit = u; }); _calculateResults(); },); _calculateResults(); },
+              inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
               ],
             ),
             SizedBox(height: 2.h),
-
-            // CROP PRICE
             InputCardWidget(
               title: 'Crop Price',
               value: _cropPrice,
               unit: _priceUnit,
-              units: const [r'$/sack', r'$/kg', r'$/t'],
-              onUnitChanged: (u) {
-                setState(() {
-                  _priceUnit = u;
-                });
-                _calculateResults();
-              },
-              hintText: 'Enter price',
+              hintText: 'Enter price per sack',
               onChanged: (value) {
                 setState(() {
                   _cropPrice = value;
                 });
                 _calculateResults();
               },
-              inputFormatters: <TextInputFormatter>[
+              units: const [r'$/sack', r'$/kg', r'$/t'],
+              onUnitChanged: (u) { setState(() { _priceUnit = u; }); _calculateResults(); },
+              inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
               ],
             ),
             SizedBox(height: 2.h),
-
-            // EFFATHA INVESTMENT
             InputCardWidget(
               title: 'Effatha Investment Cost',
               value: _effathaInvestment,
               unit: _investmentUnit,
-              units: const [r'$/ha', r'$/acre', 'sacks/ha', 'sacks/acre'],
-              onUnitChanged: (u) {
-                setState(() {
-                  _investmentUnit = u;
-                });
-                _calculateResults();
-              },
               hintText: 'Enter investment per area',
               onChanged: (value) {
                 setState(() {
@@ -544,24 +517,19 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 });
                 _calculateResults();
               },
-              inputFormatters: <TextInputFormatter>[
+              units: const [r'$/ha', r'$/acre', 'sacks/ha', 'sacks/acre'],
+              onUnitChanged: (u) { setState(() { _investmentUnit = u; }); _calculateResults(); },); _calculateResults(); },
+              inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
               ],
             ),
             SizedBox(height: 2.h),
-
-            // ADDITIONAL PRODUCTIVITY
             InputCardWidget(
               title: 'Additional Productivity with Effatha',
               value: _additionalProductivity,
               unit: _additionalProductivityUnit,
-              units: const ['sacks/ha', 'sacks/acre', 't/ha', 'kg/ha'],
-              onUnitChanged: (u) {
-                setState(() {
-                  _additionalProductivityUnit = u;
-                });
-                _calculateResults();
-              },
+              units: const ['sacks/ha','sacks/acre','t/ha','kg/ha'],
+              onUnitChanged: (u) { setState(() { _additionalProductivityUnit = u; }); _calculateResults(); },); _calculateResults(); },
               hintText: 'Enter additional productivity',
               onChanged: (value) {
                 setState(() {
@@ -569,11 +537,10 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 });
                 _calculateResults();
               },
-              inputFormatters: <TextInputFormatter>[
+              inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
               ],
             ),
-
             SizedBox(height: 3.h),
             ResultsSummaryWidget(
               traditionalResults: _traditionalResults,
@@ -656,10 +623,13 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                     border: OutlineInputBorder(),
                   ),
                   items: const [
-                    DropdownMenuItem(value: 'USD', child: Text('USD - US Dollar')),
-                    DropdownMenuItem(value: 'BRL', child: Text('BRL - Brazilian Real')),
+                    DropdownMenuItem(
+                        value: 'USD', child: Text('USD - US Dollar')),
+                    DropdownMenuItem(
+                        value: 'BRL', child: Text('BRL - Brazilian Real')),
                     DropdownMenuItem(value: 'EUR', child: Text('EUR - Euro')),
-                    DropdownMenuItem(value: 'GBP', child: Text('GBP - British Pound')),
+                    DropdownMenuItem(
+                        value: 'GBP', child: Text('GBP - British Pound')),
                   ],
                 ),
                 SizedBox(height: 2.h),
@@ -682,14 +652,16 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                     border: OutlineInputBorder(),
                   ),
                   items: const [
-                    DropdownMenuItem(value: 'hectares', child: Text('Hectares')),
+                    DropdownMenuItem(
+                        value: 'hectares', child: Text('Hectares')),
                     DropdownMenuItem(value: 'acres', child: Text('Acres')),
                     DropdownMenuItem(value: 'm²', child: Text('Square Meters')),
                   ],
                 ),
                 SizedBox(height: 3.h),
                 ElevatedButton(
-                  onPressed: () => Navigator.pushNamed(context, '/settings-screen'),
+                  onPressed: () =>
+                      Navigator.pushNamed(context, '/settings-screen'),
                   child: const Text('Advanced Settings'),
                 ),
               ],
@@ -792,7 +764,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 ),
                 SizedBox(height: 2.h),
                 ElevatedButton(
-                  onPressed: () => Navigator.pushNamed(context, '/login-screen'),
+                  onPressed: () =>
+                      Navigator.pushNamed(context, '/login-screen'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.errorLight,
                     foregroundColor: Colors.white,
