@@ -702,7 +702,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                     Expanded(
                       child: _highlightTile(
                         context,
-                        title: 'Diferença (R\$)',
+                        title: 'Diferença ($)',
                         value: _fmtMoney(diffProfitMoney),
                       ),
                     ),
