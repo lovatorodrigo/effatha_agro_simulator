@@ -55,12 +55,9 @@
   "simulationsRun": "Simulations Run",
   "profile": "Profile",
   "login": "Login",
-
-  // ==== New keys for units and sections ====
   "priceUnit_sc": "$/sc",
   "priceUnit_kg": "$/kg",
   "priceUnit_t": "$/t",
-
   "resultsTitle": "Results",
   "profitabilitySection": "Profitability",
   "totalRevenue": "Total Revenue",
