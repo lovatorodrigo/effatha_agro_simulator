@@ -10,7 +10,6 @@ import '../export_results_screen/export_results_screen.dart';
 import './widgets/comparison_card_widget.dart';
 import './widgets/crop_selector_widget.dart';
 import './widgets/input_card_widget.dart';
-import './widgets/progress_indicator_widget.dart';
 
 class SimulationDashboard extends StatefulWidget {
   SimulationDashboard({super.key});
@@ -44,7 +43,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   String _investmentUnit = r'$/ha';
   String _additionalProductivityUnit = 'sc/ha';
 
-  // Results (valores numéricos em base kg/ha e $/ha)
+  // Results
   Map<String, dynamic> _traditionalResults = {};
   Map<String, dynamic> _effathaResults = {};
 
@@ -79,7 +78,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     } catch (_) {}
   }
 
-  // ---------------------------------------------------------------------------
   // Helpers de formatação
   String _fmtMoney(double value) {
     final f =
@@ -112,7 +110,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     super.dispose();
   }
 
-  // ---------------------------------------------------------------------------
   // Cálculos
   void _calculateResults() {
     // Entradas
@@ -216,13 +213,12 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
     setState(() {
       _traditionalResults = {
-        'investmentTotal': _fmtMoney(traditionalTotalCosts), // custo total
+        'investmentTotal': _fmtMoney(traditionalTotalCosts),
         'productionTotal': _formatTotalProduction(traditionalProductionKg),
         'profitabilityPercent': _fmtPercent(traditionalProfitability),
-        'roi': _fmtPercent(traditionalProfitability), // aproximação
+        'roi': _fmtPercent(traditionalProfitability),
         'profit': traditionalProfit,
         'revenue': traditionalRevenue,
-        // extras internos
         '_productionKg': traditionalProductionKg,
         '_totalCosts': traditionalTotalCosts,
         '_profitabilityRaw': traditionalProfitability,
@@ -237,7 +233,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         'additionalProfitPercent': _fmtPercent(additionalProfitPercent),
         'profit': effathaProfit,
         'revenue': effathaRevenue,
-        // extras internos
         '_productionKg': effathaProductionKg,
         '_totalCosts': effathaTotalCosts,
         '_profitabilityRaw': effathaProfitability,
@@ -245,7 +240,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     });
   }
 
-  // ---------------------------------------------------------------------------
   // UI
   @override
   Widget build(BuildContext context) {
@@ -375,10 +369,11 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         color: Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const TabBar(
-        tabs: [
+      child: TabBar(
+        controller: _tabController, // <-- FIX: agora com controller
+        tabs: const [
           Tab(text: 'Dashboard'),
-       	  Tab(text: 'Settings'),
+          Tab(text: 'Settings'),
           Tab(text: 'Profile'),
         ],
         labelColor: Colors.white,
@@ -465,7 +460,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             ),
             SizedBox(height: 2.h),
 
-            // --------- Inputs ----------
+            // ---------- Inputs ----------
             InputCardWidget(
               title: AppLocalizations.of(context)!.area,
               value: _area,
@@ -583,38 +578,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
             SizedBox(height: 3.h),
 
-            // --------- CARD BRANCO: Padrão Fazenda x Effatha ----------
+            // ---------- CARD BRANCO: Padrão Fazenda x Effatha ----------
             _buildResultsWhiteCard(context),
-
-            SizedBox(height: 3.h),
-
-            // --------- ROI Progress ----------
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(4.w),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.92),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.10),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: ProgressIndicatorWidget(
-                title: AppLocalizations.of(context)!.roiProgress,
-                value: double.tryParse(
-                        (_effathaResults['roi'] as String?)
-                                ?.replaceAll('%', '') ??
-                            '0') ??
-                    0,
-                maxValue: 100,
-                displayValue: _effathaResults['roi'] ?? '0%',
-                progressColor: AppTheme.successLight,
-              ),
-            ),
 
             SizedBox(height: 10.h),
           ],
@@ -625,7 +590,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
   // Card branco com os campos do novo modelo
   Widget _buildResultsWhiteCard(BuildContext context) {
-    // Números puros que já calculamos (para produzir as strings)
     final double tProfit = (_traditionalResults['profit'] as double?) ?? 0.0;
     final double eProfit = (_effathaResults['profit'] as double?) ?? 0.0;
 
@@ -634,9 +598,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
     final double tCosts = (_traditionalResults['_totalCosts'] as double?) ?? 0;
     final double eCosts = (_effathaResults['_totalCosts'] as double?) ?? 0;
-
-    final String title =
-        'Padrão Fazenda x Effatha'; // rótulo fixo conforme solicitado
 
     String prodToSc(double kg) {
       final sc = _kgPerSackWeight > 0 ? kg / _kgPerSackWeight : 0.0;
@@ -661,106 +622,86 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            title,
+            'Padrão Fazenda x Effatha',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
           ),
           SizedBox(height: 1.h),
-
-          // grade 2 colunas
-          LayoutBuilder(
-            builder: (ctx, c) {
-              Widget rowItem(String label, String left, String right) {
-                return Padding(
-                  padding: EdgeInsets.symmetric(vertical: 1.1.h),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '$label (Padrão Fazenda)',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(color: AppTheme.textSecondaryLight),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              left,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(width: 4.w),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '$label (Effatha)',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(color: AppTheme.textSecondaryLight),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              right,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
-
-              return Column(
-                children: [
-                  // Investimento Total
-                  rowItem(
-                    'Investimento Total',
-                    _fmtMoney(tCosts),
-                    _fmtMoney(eCosts),
-                  ),
-
-                  // Produção Total (em sc)
-                  rowItem(
-                    'Produção Total',
-                    prodToSc(tProdKg),
-                    prodToSc(eProdKg),
-                  ),
-
-                  // Rentabilidade Total (R$)
-                  rowItem(
-                    'Rentabilidade Total (R\$)',
-                    _fmtMoney(tProfit),
-                    _fmtMoney(eProfit),
-                  ),
-
-                  // Rentabilidade Total (%)
-                  rowItem(
-                    'Rentabilidade Total (%)',
-                    _traditionalResults['profitabilityPercent'] ?? '0%',
-                    _effathaResults['profitabilityPercent'] ?? '0%',
-                  ),
-                ],
-              );
-            },
+          _doubleRow(
+            context,
+            label: 'Investimento Total',
+            left: _fmtMoney(tCosts),
+            right: _fmtMoney(eCosts),
+          ),
+          _doubleRow(
+            context,
+            label: 'Produção Total',
+            left: prodToSc(tProdKg),
+            right: prodToSc(eProdKg),
+          ),
+          _doubleRow(
+            context,
+            label: 'Rentabilidade Total (R\$)',
+            left: _fmtMoney(tProfit),
+            right: _fmtMoney(eProfit),
+          ),
+          _doubleRow(
+            context,
+            label: 'Rentabilidade Total (%)',
+            left: _traditionalResults['profitabilityPercent'] ?? '0%',
+            right: _effathaResults['profitabilityPercent'] ?? '0%',
           ),
         ],
       ),
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Settings e Profile (inalterados além de pequenos toques de estilo)
+  Widget _doubleRow(BuildContext context,
+      {required String label, required String left, required String right}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 1.1.h),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$label (Padrão Fazenda)',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: AppTheme.textSecondaryLight),
+                ),
+                const SizedBox(height: 4),
+                Text(left, style: Theme.of(context).textTheme.bodyMedium),
+              ],
+            ),
+          ),
+          SizedBox(width: 4.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$label (Effatha)',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: AppTheme.textSecondaryLight),
+                ),
+                const SizedBox(height: 4),
+                Text(right, style: Theme.of(context).textTheme.bodyMedium),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
+  // Settings e Profile (mantidos)
   Widget _buildSettingsTab() {
     final theme = Theme.of(context);
 
@@ -801,7 +742,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Mantido simples – você já pediu para usar apenas '$' no app
                 Text(
                   AppLocalizations.of(context)!.areaUnit,
                   style: theme.textTheme.titleMedium?.copyWith(
