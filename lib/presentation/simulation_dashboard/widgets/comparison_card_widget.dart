@@ -1,4 +1,4 @@
-import '../../l10n/app_localizations.dart';
+import 'package:effatha_agro_simulator/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 

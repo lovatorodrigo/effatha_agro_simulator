@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
 import 'core/localization/locale_controller.dart';
-import 'l10n/app_localizations.dart';
+import 'package:effatha_agro_simulator/l10n/app_localizations.dart';
 import 'routes/app_routes.dart';
 
 class _LocaleProvider extends InheritedNotifier<LocaleController> {

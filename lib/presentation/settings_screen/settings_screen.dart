@@ -11,7 +11,7 @@ import './widgets/reset_defaults_widget.dart';
 import './widgets/weight_input_widget.dart';
 
 // i18n + controle de idioma
-import '../../l10n/app_localizations.dart';
+import 'package:effatha_agro_simulator/l10n/app_localizations.dart';
 import '../../core/localization/locale_controller.dart';
 
 class SettingsScreen extends StatefulWidget {
