@@ -611,12 +611,47 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0,2))],
   ),
   padding: EdgeInsets.all(16),
-  child: ResultsSummaryWidget(
+  child: Container(
+   decoration: BoxDecoration(
+     color: Colors.white.withOpacity(0.92),
+     borderRadius: BorderRadius.circular(12),
+     boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0,2))],
+   ),
+   padding: EdgeInsets.all(16),
+   child:  Container(
+  margin: EdgeInsets.symmetric(vertical: 16),
+  decoration: BoxDecoration(
+    color: Colors.white.withOpacity(0.92),
+    borderRadius: BorderRadius.circular(12),
+    boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0,2))],
+  ),
+  padding: EdgeInsets.all(16),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+ResultsSummaryWidget(
               traditionalResults: _traditionalResults,
               effathaResults: _effathaResults,
             )
+ ),
+
 ),,
             SizedBox(height: 3.h),
+            Container(
+
+              decoration: BoxDecoration(
+
+                color: Colors.white.withOpacity(0.92),
+
+                borderRadius: BorderRadius.circular(12),
+
+                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0,2))],
+
+              ),
+
+              padding: EdgeInsets.all(16),
+
+              child: 
             ProgressIndicatorWidget(
               title: AppLocalizations.of(context)!.roiProgress,
               value: double.tryParse(
@@ -625,7 +660,13 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               maxValue: 100,
               displayValue: _effathaResults['roi'] ?? '0%',
               progressColor: AppTheme.successLight,
+            )
+
             ),
+    ],
+  ),
+)
+,
             SizedBox(height: 10.h),
           ],
         ),
@@ -732,7 +773,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 ElevatedButton(
                   onPressed: () =>
                       Navigator.pushNamed(context, '/settings-screen'),
-                  child: const Text(AppLocalizations.of(context)!.advancedSettings),
+                  child: Text(AppLocalizations.of(context)!.advancedSettings),
                 ),
               ],
             ),
