@@ -291,11 +291,11 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               onPressed: () => Navigator.pushNamed(
                 context,
                 '/export-results-screen',
-                arguments: SimulationExportArgs(
-                  traditional: _traditionalResults,
-                  effatha: _effathaResults,
-                  cropKey: _selectedCrop,
-                  inputs: {
+                arguments: {
+                  'traditional': _traditionalResults,
+                  'effatha': _effathaResults,
+                  'cropKey': _selectedCrop,
+                  'inputs': {
                     'area': _area,
                     'areaUnit': _areaUnit,
                     'productivity': _historicalProductivity,
@@ -309,7 +309,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                     'additionalProductivity': _additionalProductivity,
                     'additionalProductivityUnit': _additionalProductivityUnit,
                   },
-                ),
+                },
               ),
               icon: CustomIconWidget(
                 iconName: 'file_download',
