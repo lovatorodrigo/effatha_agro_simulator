@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:effatha_agro_simulator/l10n/app_localizations.dart';
 
 class ReportTemplateWidget extends StatelessWidget {
   final Map<String, dynamic> traditional;
@@ -41,10 +40,9 @@ class ReportTemplateWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context);
 
     return AspectRatio(
-      aspectRatio: 210 / 297, // A4 em pé
+      aspectRatio: 210 / 297, // A4 portrait
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -67,13 +65,12 @@ class ReportTemplateWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Cabeçalho
                 Row(
                   children: [
                     Image.asset('assets/images/logo_effatha.png', height: 40),
                     const SizedBox(width: 12),
                     Text(
-                      l10n?.exportReport ?? 'Effatha Agro Simulator — Report',
+                      'Effatha Agro Simulator — Report',
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
@@ -83,72 +80,61 @@ class ReportTemplateWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Card: Profitability Analysis
                 _card(
                   theme,
-                  title:
-                      l10n?.profitabilityAnalysis ?? 'Profitability Analysis',
+                  title: 'Profitability Analysis',
                   rows: [
                     _row(
-                      label: l10n?.investmentTotal ?? 'Investment (Total)',
+                      theme: theme,
+                      label: 'Investment (Total)',
                       trad: (traditional['investmentTotal'] ?? '-').toString(),
                       eff: (effatha['investmentTotal'] ?? '-').toString(),
-                      theme: theme,
                     ),
                     _row(
-                      label: l10n?.productionTotal ?? 'Production (Total)',
-                      trad:
-                          (traditional['productionTotal'] ?? '-').toString(),
+                      theme: theme,
+                      label: 'Production (Total)',
+                      trad: (traditional['productionTotal'] ?? '-').toString(),
                       eff: (effatha['productionTotal'] ?? '-').toString(),
-                      theme: theme,
                     ),
                     _row(
-                      label: l10n?.profitability ?? 'Profitability',
-                      trad: (traditional['profitabilityPercent'] ?? '0%')
-                          .toString(),
+                      theme: theme,
+                      label: 'Profitability',
+                      trad: (traditional['profitabilityPercent'] ?? '0%').toString(),
                       eff: (effatha['profitabilityPercent'] ?? '0%').toString(),
-                      theme: theme,
                     ),
                     _row(
-                      label: l10n?.roi ?? 'ROI',
+                      theme: theme,
+                      label: 'ROI',
                       trad: (traditional['roi'] ?? '0%').toString(),
                       eff: (effatha['roi'] ?? '0%').toString(),
-                      theme: theme,
                     ),
                   ],
                 ),
 
                 const SizedBox(height: 12),
 
-                // Card: Additional Profit
                 _card(
                   theme,
-                  title: l10n?.additionalProfitWithEffatha ??
-                      'Additional Profit with Effatha',
+                  title: 'Additional Profit with Effatha',
                   rows: [
                     _row(
-                      label: l10n?.additionalProfit ?? 'Additional Profit',
-                      trad: '',
-                      eff: (effatha['additionalProfit'] ?? r'$ 0,00')
-                          .toString(),
                       theme: theme,
+                      label: 'Additional Profit',
+                      trad: '',
+                      eff: (effatha['additionalProfit'] ?? r'$ 0,00').toString(),
                     ),
                     _row(
-                      label: l10n?.vsTraditional ?? 'vs Traditional',
-                      trad: '',
-                      eff: (effatha['additionalProfitPercent'] ?? '0%')
-                          .toString(),
                       theme: theme,
+                      label: 'vs Traditional',
+                      trad: '',
+                      eff: (effatha['additionalProfitPercent'] ?? '0%').toString(),
                     ),
                   ],
                 ),
 
                 const Spacer(),
-
-                // Rodapé: unidades
                 Text(
-                  (l10n?.unitsLabel ?? 'Units') +
-                      ': area=$areaUnit • productivity=$productivityUnit',
+                  'Units: area=$areaUnit • productivity=$productivityUnit',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: Colors.white70,
                   ),
@@ -193,10 +179,10 @@ class ReportTemplateWidget extends StatelessWidget {
   }
 
   Widget _row({
+    required ThemeData theme,
     required String label,
     required String trad,
     required String eff,
-    required ThemeData theme,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -206,8 +192,8 @@ class ReportTemplateWidget extends StatelessWidget {
             flex: 2,
             child: Text(
               label,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: Colors.black87),
+              style:
+                  theme.textTheme.bodyMedium?.copyWith(color: Colors.black87),
             ),
           ),
           Expanded(
@@ -215,8 +201,8 @@ class ReportTemplateWidget extends StatelessWidget {
             child: Text(
               trad,
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: Colors.black87),
+              style:
+                  theme.textTheme.bodyMedium?.copyWith(color: Colors.black87),
             ),
           ),
           Expanded(
@@ -224,8 +210,8 @@ class ReportTemplateWidget extends StatelessWidget {
             child: Text(
               eff,
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: Colors.black87),
+              style:
+                  theme.textTheme.bodyMedium?.copyWith(color: Colors.black87),
             ),
           ),
         ],
