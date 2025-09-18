@@ -295,7 +295,7 @@ class ReportService {
   static pw.Widget _miniTile(String label, String value) {
     return pw.Container(
       decoration: pw.BoxDecoration(
-        color: PdfColors.white.withOpacity(0.16),
+        color: PdfColor(1, 1, 1, 0.16),
         borderRadius: pw.BorderRadius.circular(8),
         border: pw.Border.all(color: PdfColors.white, width: 0.3),
       ),
@@ -346,3 +346,4 @@ class ReportService {
     }
   }
 }
+
