@@ -49,7 +49,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   Map<String, dynamic> _traditionalResults = {};
   Map<String, dynamic> _effathaResults = {};
 
-  // Mock data for background images
+  // Backgrounds
   final Map<String, String> _cropBackgrounds = {
     'soy': 'assets/images/bg_sim_soy.jpg',
     'corn': 'assets/images/bg_sim_corn.jpg',
@@ -82,14 +82,12 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
   // ---- Formatting helpers ----------------------------------------------------
 
-  // $ com pt_BR (milhares/ponto e decimais/vírgula)
   String _fmtMoney(double value) {
     final f =
         NumberFormat.currency(locale: 'pt_BR', symbol: r'$ ', decimalDigits: 2);
     return f.format(value);
   }
 
-  // Percentual com vírgula
   String _fmtPercent(double value, {int decimals = 1}) {
     final rounded = double.parse(value.toStringAsFixed(decimals));
     return '${NumberFormat.decimalPattern('pt_BR').format(rounded)}%';
@@ -193,8 +191,9 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     final double traditionalTotalCosts = areaHa * costsPerHa;
     final double traditionalProfit =
         traditionalRevenue - traditionalTotalCosts;
-    final double traditionalProfitability =
-        traditionalTotalCosts > 0 ? (traditionalProfit / traditionalTotalCosts) * 100.0 : 0.0;
+    final double traditionalProfitability = traditionalTotalCosts > 0
+        ? (traditionalProfit / traditionalTotalCosts) * 100.0
+        : 0.0;
 
     // Com Effatha
     final double effathaProductionKg =
@@ -203,8 +202,9 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     final double effathaInvestmentTotal = areaHa * investmentPerHa;
     final double effathaTotalCosts = areaHa * (costsPerHa + investmentPerHa);
     final double effathaProfit = effathaRevenue - effathaTotalCosts;
-    final double effathaProfitability =
-        effathaTotalCosts > 0 ? (effathaProfit / effathaTotalCosts) * 100.0 : 0.0;
+    final double effathaProfitability = effathaTotalCosts > 0
+        ? (effathaProfit / effathaTotalCosts) * 100.0
+        : 0.0;
 
     // Métricas adicionais
     final double additionalProfit = effathaProfit - traditionalProfit;
@@ -288,30 +288,29 @@ class _SimulationDashboardState extends State<SimulationDashboard>
       ),
       floatingActionButton: _tabController.index == 0
           ? FloatingActionButton.extended(
-              onPressed: () =>
-                  Navigator.pushNamed(
-                  context,
-                  '/export-results-screen',
-                  arguments: SimulationExportArgs(
-                    traditional: _traditionalResults,
-                    effatha: _effathaResults,
-                    cropKey: _selectedCrop,
-                    inputs: {
-                      'area': _area,
-                      'areaUnit': _areaUnit,
-                      'productivity': _historicalProductivity,
-                      'productivityUnit': _productivityUnit,
-                      'costs': _historicalCosts,
-                      'costUnit': _costUnit,
-                      'price': _cropPrice,
-                      'priceUnit': _priceUnit,
-                      'investment': _effathaInvestment,
-                      'investmentUnit': _investmentUnit,
-                      'additionalProductivity': _additionalProductivity,
-                      'additionalProductivityUnit': _additionalProductivityUnit,
-                    },
-                  ),
+              onPressed: () => Navigator.pushNamed(
+                context,
+                '/export-results-screen',
+                arguments: SimulationExportArgs(
+                  traditional: _traditionalResults,
+                  effatha: _effathaResults,
+                  cropKey: _selectedCrop,
+                  inputs: {
+                    'area': _area,
+                    'areaUnit': _areaUnit,
+                    'productivity': _historicalProductivity,
+                    'productivityUnit': _productivityUnit,
+                    'costs': _historicalCosts,
+                    'costUnit': _costUnit,
+                    'price': _cropPrice,
+                    'priceUnit': _priceUnit,
+                    'investment': _effathaInvestment,
+                    'investmentUnit': _investmentUnit,
+                    'additionalProductivity': _additionalProductivity,
+                    'additionalProductivityUnit': _additionalProductivityUnit,
+                  },
                 ),
+              ),
               icon: CustomIconWidget(
                 iconName: 'file_download',
                 color: AppTheme.onSecondaryLight,
@@ -348,8 +347,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
-                shadows: [
-                  const Shadow(
+                shadows: const [
+                  Shadow(
                     color: Colors.black54,
                     offset: Offset(0, 1),
                     blurRadius: 2,
@@ -360,7 +359,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
           ),
           IconButton(
             onPressed: () => Navigator.pushNamed(context, '/settings-screen'),
-            icon: CustomIconWidget(
+            icon: const CustomIconWidget(
               iconName: 'settings',
               color: Colors.white,
               size: 24,
@@ -378,9 +377,9 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         color: Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: TabBar(
-        controller: _tabController,
-        tabs: const [
+      child: const TabBar(
+        // (pode trocar por AppLocalizations se quiser)
+        tabs: [
           Tab(text: 'Dashboard'),
           Tab(text: 'Settings'),
           Tab(text: 'Profile'),
@@ -419,8 +418,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
-                    shadows: [
-                      const Shadow(
+                    shadows: const [
+                      Shadow(
                         color: Colors.black54,
                         offset: Offset(0, 1),
                         blurRadius: 2,
@@ -434,8 +433,10 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 Expanded(
                   child: ComparisonCardWidget(
                     title: AppLocalizations.of(context)!.traditionalFarming,
-                    value: _traditionalResults['profitabilityPercent'] ?? '0%',
-                    subtitle: AppLocalizations.of(context)!.currentProfitability,
+                    value:
+                        _traditionalResults['profitabilityPercent'] ?? '0%',
+                    subtitle:
+                        AppLocalizations.of(context)!.currentProfitability,
                   ),
                 ),
                 SizedBox(width: 3.w),
@@ -443,7 +444,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                   child: ComparisonCardWidget(
                     title: AppLocalizations.of(context)!.comEffatha,
                     value: _effathaResults['profitabilityPercent'] ?? '0%',
-                    subtitle: AppLocalizations.of(context)!.enhancedProfitability,
+                    subtitle:
+                        AppLocalizations.of(context)!.enhancedProfitability,
                     isEffatha: false,
                     accentColor: AppTheme.successLight,
                   ),
@@ -456,8 +458,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
-                    shadows: [
-                      const Shadow(
+                    shadows: const [
+                      Shadow(
                         color: Colors.black54,
                         offset: Offset(0, 1),
                         blurRadius: 2,
@@ -466,6 +468,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                   ),
             ),
             SizedBox(height: 2.h),
+
+            // === Inputs =======================================================
             InputCardWidget(
               title: AppLocalizations.of(context)!.area,
               value: _area,
@@ -562,7 +566,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               title: AppLocalizations.of(context)!.effathaInvestmentCost,
               value: _effathaInvestment,
               unit: _investmentUnit,
-              hintText: AppLocalizations.of(context)!.enterInvestmentPerArea,
+              hintText:
+                  AppLocalizations.of(context)!.enterInvestmentPerArea,
               onChanged: (value) {
                 setState(() {
                   _effathaInvestment = value;
@@ -603,70 +608,44 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
               ],
             ),
+
+            // === Profitability Analysis (card branco) =========================
             SizedBox(height: 3.h),
             Container(
-  decoration: BoxDecoration(
-    color: Colors.white.withOpacity(0.92),
-    borderRadius: BorderRadius.circular(12),
-    boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0,2))],
-  ),
-  padding: EdgeInsets.all(16),
-  child: Container(
-   decoration: BoxDecoration(
-     color: Colors.white.withOpacity(0.92),
-     borderRadius: BorderRadius.circular(12),
-     boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0,2))],
-   ),
-   padding: EdgeInsets.all(16),
-   child:  Container(
-  margin: EdgeInsets.symmetric(vertical: 16),
-  decoration: BoxDecoration(
-    color: Colors.white.withOpacity(0.92),
-    borderRadius: BorderRadius.circular(12),
-    boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0,2))],
-  ),
-  padding: EdgeInsets.all(16),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-ResultsSummaryWidget(
-              traditionalResults: _traditionalResults,
-              effathaResults: _effathaResults,
-            )
- ),
-
-),,
-            SizedBox(height: 3.h),
-            Container(
-
               decoration: BoxDecoration(
-
                 color: Colors.white.withOpacity(0.92),
-
                 borderRadius: BorderRadius.circular(12),
-
-                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0,2))],
-
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
-
-              padding: EdgeInsets.all(16),
-
-              child: 
-            ProgressIndicatorWidget(
-              title: AppLocalizations.of(context)!.roiProgress,
-              value: double.tryParse(
-                      _effathaResults['roi']?.replaceAll('%', '') ?? '0') ??
-                  0,
-              maxValue: 100,
-              displayValue: _effathaResults['roi'] ?? '0%',
-              progressColor: AppTheme.successLight,
-            )
-
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ResultsSummaryWidget(
+                    traditionalResults: _traditionalResults,
+                    effathaResults: _effathaResults,
+                  ),
+                  SizedBox(height: 2.h),
+                  ProgressIndicatorWidget(
+                    title: AppLocalizations.of(context)!.roiProgress,
+                    value: double.tryParse(
+                            _effathaResults['roi']?.replaceAll('%', '') ??
+                                '0') ??
+                        0,
+                    maxValue: 100,
+                    displayValue: _effathaResults['roi'] ?? '0%',
+                    progressColor: AppTheme.successLight,
+                  ),
+                ],
+              ),
             ),
-    ],
-  ),
-)
-,
+
             SizedBox(height: 10.h),
           ],
         ),
@@ -688,8 +667,8 @@ ResultsSummaryWidget(
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               color: Colors.white,
-              shadows: [
-                const Shadow(
+              shadows: const [
+                Shadow(
                   color: Colors.black54,
                   offset: Offset(0, 1),
                   blurRadius: 2,
@@ -715,6 +694,7 @@ ResultsSummaryWidget(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // (Mantido conforme o atual do projeto)
                 Text(
                   'Currency Settings',
                   style: theme.textTheme.titleMedium?.copyWith(
@@ -758,15 +738,24 @@ ResultsSummaryWidget(
                       _areaUnit = value ?? 'hectares';
                     });
                   },
-                  decoration: const InputDecoration(
+                  // REMOVIDO const: há AppLocalizations dentro
+                  decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.areaUnit,
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                   ),
-                  items: const [
+                  // REMOVIDO const: há AppLocalizations dentro
+                  items: [
                     DropdownMenuItem(
-                        value: 'hectares', child: Text(AppLocalizations.of(context)!.hectares)),
-                    DropdownMenuItem(value: 'acres', child: Text(AppLocalizations.of(context)!.acres)),
-                    DropdownMenuItem(value: 'm²', child: Text(AppLocalizations.of(context)!.squareMeters)),
+                        value: 'hectares',
+                        child: Text(
+                            AppLocalizations.of(context)!.hectares)),
+                    DropdownMenuItem(
+                        value: 'acres',
+                        child:
+                            Text(AppLocalizations.of(context)!.acres)),
+                    DropdownMenuItem(
+                        value: 'm²',
+                        child: Text(AppLocalizations.of(context)!.squareMeters)),
                   ],
                 ),
                 SizedBox(height: 3.h),
@@ -796,8 +785,8 @@ ResultsSummaryWidget(
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               color: Colors.white,
-              shadows: [
-                const Shadow(
+              shadows: const [
+                Shadow(
                   color: Colors.black54,
                   offset: Offset(0, 1),
                   blurRadius: 2,
@@ -825,18 +814,16 @@ ResultsSummaryWidget(
                 CircleAvatar(
                   radius: 50,
                   backgroundColor: AppTheme.primaryLight,
-                  child: CustomIconWidget(
+                  child: const CustomIconWidget(
                     iconName: 'person',
                     color: Colors.white,
                     size: 50,
                   ),
                 ),
                 SizedBox(height: 2.h),
-                Text(
+                const Text(
                   'Agricultural Professional',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  // (pode internacionalizar depois)
                 ),
                 SizedBox(height: 1.h),
                 Text(
