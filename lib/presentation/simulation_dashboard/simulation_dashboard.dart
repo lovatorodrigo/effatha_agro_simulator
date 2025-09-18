@@ -24,17 +24,17 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
   // Form data
   String _selectedCrop = 'soy';
-  String _area = '100';
-  String _historicalProductivity = '60';
-  String _historicalCosts = '5000';
-  String _cropPrice = '80';
-  String _effathaInvestment = '500';
-  String _additionalProductivity = '15';
+  String _area = '0';
+  String _historicalProductivity = '0';
+  String _historicalCosts = '0';
+  String _cropPrice = '0';
+  String _effathaInvestment = '0';
+  String _additionalProductivity = '0';
 
   // Settings
   String _currency = 'USD';
   double _kgPerSackWeight = 60.0;
-  String _priceUnit = r'$/sack';
+  String _priceUnit = r'$/sc';
   String _areaUnit = 'hectares';
   String _productivityUnit = 'sc/ha';
 
@@ -525,7 +525,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 setState(() => _cropPrice = value);
                 _calculateResults();
               },
-              units: const [r'$/sack', r'$/kg', r'$/t'],
+              units: const [r'$/sc', r'$/kg', r'$/t'],
               onUnitChanged: (u) {
                 setState(() => _priceUnit = u);
                 _calculateResults();
