@@ -37,7 +37,7 @@
   "enterInvestmentPerArea": "Enter investment per area",
   "additionalProductivity": "Additional Productivity with Effatha",
   "enterAdditionalProductivity": "Enter additional productivity",
-  "traditionalFarming": "Traditional Farming",
+  "traditionalFarming": "Traditional Farm",
   "comEffatha": "With Effatha",
   "currentProfitability": "Current profitability",
   "enhancedProfitability": "Enhanced profitability",
@@ -54,5 +54,22 @@
   "averageROI": "Average ROI",
   "simulationsRun": "Simulations Run",
   "profile": "Profile",
-  "login": "Login"
+  "login": "Login",
+
+  // ==== New keys for units and sections ====
+  "priceUnit_sc": "$/sc",
+  "priceUnit_kg": "$/kg",
+  "priceUnit_t": "$/t",
+
+  "resultsTitle": "Results",
+  "profitabilitySection": "Profitability",
+  "totalRevenue": "Total Revenue",
+  "totalProduction": "Total Production",
+  "totalInvestment": "Total Investment",
+  "totalProfit": "Total Profit (cash)",
+  "totalProfitPercent": "Total Profit (%)",
+  "traditionalLabel": "Traditional",
+  "effathaLabel": "Effatha",
+  "additionalProfitCash": "Additional Profit with Effatha (cash)",
+  "additionalProfitPercent": "Additional Profit with Effatha (%)"
 }
