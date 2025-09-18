@@ -10,6 +10,8 @@ import '../export_results_screen/export_results_screen.dart';
 import './widgets/comparison_card_widget.dart';
 import './widgets/crop_selector_widget.dart';
 import './widgets/input_card_widget.dart';
+import './widgets/profile_tab_widget.dart';
+
 
 class SimulationDashboard extends StatefulWidget {
   SimulationDashboard({super.key});
@@ -886,8 +888,49 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     );
   }
 
-  Widget _buildProfileTab() {
+    Widget _buildProfileTab() {
     final theme = Theme.of(context);
+
+    // Controladores locais (simples e suficientes para esta tela).
+    final nameCtrl = TextEditingController(text: 'Agricultural Professional');
+    final emailCtrl = TextEditingController(text: 'user@effatha.com');
+    final pwdCtrl = TextEditingController();
+    final pwd2Ctrl = TextEditingController();
+
+    void saveChanges() {
+      // Validação simples de e-mail e senha (quando informada)
+      final email = emailCtrl.text.trim();
+      if (email.isEmpty || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Informe um e-mail válido.')),
+        );
+        return;
+      }
+      if (pwdCtrl.text.isNotEmpty || pwd2Ctrl.text.isNotEmpty) {
+        if (pwdCtrl.text != pwd2Ctrl.text) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('As senhas não conferem.')),
+          );
+          return;
+        }
+        if (pwdCtrl.text.length < 6) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('A senha deve ter pelo menos 6 caracteres.')),
+          );
+          return;
+        }
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Alterações salvas.')),
+      );
+
+      // Limpa os campos de senha após salvar
+      pwdCtrl.clear();
+      pwd2Ctrl.clear();
+      FocusScope.of(context).unfocus();
+      setState(() {});
+    }
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(4.w),
@@ -900,56 +943,115 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               fontWeight: FontWeight.w700,
               color: Colors.white,
               shadows: const [
-                Shadow(
-                  color: Colors.black54,
-                  offset: Offset(0, 1),
-                  blurRadius: 2,
-                ),
+                Shadow(color: Colors.black54, offset: Offset(0, 1), blurRadius: 2),
               ],
             ),
           ),
           SizedBox(height: 3.h),
+
+          // Card principal do perfil
           Container(
             width: double.infinity,
             padding: EdgeInsets.all(4.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withOpacity(0.90),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withOpacity(0.10),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
               ],
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundColor: AppTheme.primaryLight,
-                  child: const CustomIconWidget(
-                    iconName: 'person',
-                    color: Colors.white,
-                    size: 50,
+                // Avatar + nome + e-mail atuais (preview)
+                Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundColor: AppTheme.primaryLight,
+                      child: const CustomIconWidget(
+                        iconName: 'person',
+                        color: Colors.white,
+                        size: 50,
+                      ),
+                    ),
+                    SizedBox(height: 1.5.h),
+                    Text(
+                      nameCtrl.text,
+                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    SizedBox(height: 0.5.h),
+                    Text(
+                      emailCtrl.text,
+                      style: theme.textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondaryLight),
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: 2.5.h),
+
+                // Campos de edição
+                TextField(
+                  controller: nameCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Nome',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (_) => setState(() {}),
+                ),
+                SizedBox(height: 1.5.h),
+                TextField(
+                  controller: emailCtrl,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (_) => setState(() {}),
+                ),
+                SizedBox(height: 1.5.h),
+
+                // Troca de senha (opcional)
+                TextField(
+                  controller: pwdCtrl,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Nova senha (opcional)',
+                    border: OutlineInputBorder(),
                   ),
                 ),
+                SizedBox(height: 1.2.h),
+                TextField(
+                  controller: pwd2Ctrl,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Confirmar nova senha',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+
                 SizedBox(height: 2.h),
-                Text(
-                  'Agricultural Professional',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    onPressed: saveChanges,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.successLight,
+                      foregroundColor: AppTheme.onSecondaryLight,
+                    ),
+                    child: const Text('Salvar Alterações'),
                   ),
                 ),
-                SizedBox(height: 1.h),
-                Text(
-                  'user@effatha.com',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.textSecondaryLight,
-                  ),
-                ),
-                SizedBox(height: 3.h),
+
+                SizedBox(height: 2.h),
+
+                // Resumo (exibe as mesmas infos do card antigo)
                 ListTile(
+                  contentPadding: EdgeInsets.zero,
                   leading: const CustomIconWidget(
                     iconName: 'analytics',
                     color: AppTheme.primaryLight,
@@ -959,6 +1061,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                   trailing: const Text('24'),
                 ),
                 ListTile(
+                  contentPadding: EdgeInsets.zero,
                   leading: const CustomIconWidget(
                     iconName: 'trending_up',
                     color: AppTheme.successLight,
@@ -968,6 +1071,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                   trailing: const Text('18.5%'),
                 ),
                 ListTile(
+                  contentPadding: EdgeInsets.zero,
                   leading: const CustomIconWidget(
                     iconName: 'agriculture',
                     color: AppTheme.primaryLight,
@@ -976,10 +1080,10 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                   title: Text(AppLocalizations.of(context)!.preferredCrop),
                   trailing: Text(_selectedCrop.toUpperCase()),
                 ),
-                SizedBox(height: 2.h),
+
+                SizedBox(height: 1.5.h),
                 ElevatedButton(
-                  onPressed: () =>
-                      Navigator.pushNamed(context, '/login-screen'),
+                  onPressed: () => Navigator.pushNamed(context, '/login-screen'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.errorLight,
                     foregroundColor: Colors.white,
@@ -993,4 +1097,4 @@ class _SimulationDashboardState extends State<SimulationDashboard>
       ),
     );
   }
-}
+
