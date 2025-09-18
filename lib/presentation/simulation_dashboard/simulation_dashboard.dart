@@ -22,14 +22,14 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     with TickerProviderStateMixin {
   late TabController _tabController;
 
-  // Form data
+  // Form data (default 0)
   String _selectedCrop = 'soy';
-  String _area = '0';
-  String _historicalProductivity = '0';
-  String _historicalCosts = '0';
-  String _cropPrice = '0';
-  String _effathaInvestment = '0';
-  String _additionalProductivity = '0';
+  String _area = '';
+  String _historicalProductivity = '';
+  String _historicalCosts = '';
+  String _cropPrice = '';
+  String _effathaInvestment = '';
+  String _additionalProductivity = '';
 
   // Settings
   String _currency = 'USD';
@@ -135,7 +135,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
       case r'$/t':
         pricePerKg = price / 1000.0;
         break;
-      case r'$/sack':
+      case r'$/sc': // saca
       default:
         pricePerKg = _kgPerSackWeight > 0 ? (price / _kgPerSackWeight) : 0.0;
         break;
@@ -202,9 +202,12 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
     // Métricas adicionais
     final double additionalProfit = effathaProfit - traditionalProfit;
+
+    // percentual do LUCRO adicional (modelo antigo)
     final double additionalProfitPercent = traditionalProfit.abs() > 0
         ? (additionalProfit / traditionalProfit) * 100.0
         : 0.0;
+
     final double roi = effathaInvestmentTotal > 0
         ? (additionalProfit / effathaInvestmentTotal) * 100.0
         : 0.0;
@@ -591,7 +594,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     final double tProfit = (_traditionalResults['profit'] as double?) ?? 0.0;
     final double eProfit = (_effathaResults['profit'] as double?) ?? 0.0;
 
-    final double tProdKg = (_traditionalResults['_productionKg'] as double?) ?? 0;
+    final double tProdKg =
+        (_traditionalResults['_productionKg'] as double?) ?? 0;
     final double eProdKg = (_effathaResults['_productionKg'] as double?) ?? 0;
 
     final double tCosts = (_traditionalResults['_totalCosts'] as double?) ?? 0;
@@ -602,13 +606,12 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     final double ePerc =
         (_effathaResults['_profitabilityRaw'] as double?) ?? 0.0;
 
-    // Diferença em R$ conforme pedido (Effatha - Padrão)
+    // Diferença em R$ (Effatha - Padrão)
     final double diffProfitMoney = eProfit - tProfit;
 
-    // Comparação (%) conforme especificação do usuário:
-    // dividir o valor % Padrão Fazenda / % Effatha * 100
-    final double percComparison =
-        ePerc != 0 ? (tPerc / ePerc) * 100.0 : 0.0;
+    // Lucro adicional (%) — modelo antigo
+    final double additionalProfitPercent =
+        tProfit.abs() > 0 ? ((eProfit - tProfit) / tProfit) * 100.0 : 0.0;
 
     String prodToSc(double kg) {
       final sc = _kgPerSackWeight > 0 ? kg / _kgPerSackWeight : 0.0;
@@ -702,7 +705,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                     Expanded(
                       child: _highlightTile(
                         context,
-                        title: 'Diferença ($)',
+                        title: 'Diferença (\$)',
                         value: _fmtMoney(diffProfitMoney),
                       ),
                     ),
@@ -710,8 +713,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                     Expanded(
                       child: _highlightTile(
                         context,
-                        title: 'Comparação (%)',
-                        value: _fmtPercent(percComparison, decimals: 2),
+                        title: 'Lucro adicional (%)',
+                        value: _fmtPercent(additionalProfitPercent, decimals: 2),
                       ),
                     ),
                   ],
