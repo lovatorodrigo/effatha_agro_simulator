@@ -6,7 +6,6 @@ import '../../core/app_export.dart';
 import '../../widgets/app_background.dart';
 import './widgets/account_section_widget.dart';
 import './widgets/area_units_selector_widget.dart';
-import './widgets/exchange_rate_widget.dart';
 import './widgets/language_selector_widget.dart';
 import './widgets/reset_defaults_widget.dart';
 import './widgets/weight_input_widget.dart';
@@ -27,41 +26,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _selectedAreaUnit = 'hectares';
   String _selectedLanguage = 'pt_BR';
   double _kgPerSackWeight = 60.0;
-  bool _isManualExchangeMode = false;
-  Map<String, double> _exchangeRates = {
-    'USD': 5.2,
-    'EUR': 5.8,
-    'GBP': 6.5,
-    'JPY': 0.035,
-  };
-
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSettings();
-  }
-
-  Future<void> _loadSettings() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-
-      setState(() {
-        _selectedAreaUnit = prefs.getString('selected_area_unit') ?? 'hectares';
-        _selectedLanguage = prefs.getString('selected_language') ?? 'pt_BR';
-        _kgPerSackWeight = prefs.getDouble('kg_per_sack_weight') ?? 60.0;
-        _isManualExchangeMode =
-            prefs.getBool('is_manual_exchange_mode') ?? false;
-
-        // Taxas de câmbio (mantidas para modo manual, se necessário)
-        _exchangeRates['USD'] = prefs.getDouble('exchange_rate_USD') ?? 5.2;
-        _exchangeRates['EUR'] = prefs.getDouble('exchange_rate_EUR') ?? 5.8;
-        _exchangeRates['GBP'] = prefs.getDouble('exchange_rate_GBP') ?? 6.5;
-        _exchangeRates['JPY'] = prefs.getDouble('exchange_rate_JPY') ?? 0.035;
-
-        _isLoading = false;
-      });
+  bool _kgPerSackWeight = 60.0;
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -302,14 +267,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _selectedAreaUnit = 'hectares';
       _selectedLanguage = 'pt_BR';
       _kgPerSackWeight = 60.0;
-      _isManualExchangeMode = false;
-      _exchangeRates = {
-        'USD': 5.2,
-        'EUR': 5.8,
-        'GBP': 6.5,
-        'JPY': 0.035,
-      };
-    });
+      _kgPerSackWeight = 60.0;
     _saveSettings();
     _applyLanguage('pt_BR');
   }

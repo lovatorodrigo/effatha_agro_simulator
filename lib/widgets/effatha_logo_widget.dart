@@ -17,7 +17,7 @@ class EffathaLogoWidget extends StatelessWidget {
     this.height,
     this.padding = const EdgeInsets.all(8.0),
     this.showContainer = false,
-    this.showShadow = true,
+    this.showShadow = false,
     this.heroTag,
   });
 
@@ -38,8 +38,8 @@ class EffathaLogoWidget extends StatelessWidget {
   })  : width = null,
         height = null,
         padding = const EdgeInsets.all(12.0),
-        showContainer = true,
-        showShadow = true;
+        showContainer = false,
+        showShadow = false;
 
   /// Large logo variant for splash/welcome screens
   const EffathaLogoWidget.large({
@@ -48,8 +48,8 @@ class EffathaLogoWidget extends StatelessWidget {
   })  : width = null,
         height = null,
         padding = const EdgeInsets.all(20.0),
-        showContainer = true,
-        showShadow = true;
+        showContainer = false,
+        showShadow = false;
 
   @override
   Widget build(BuildContext context) {
