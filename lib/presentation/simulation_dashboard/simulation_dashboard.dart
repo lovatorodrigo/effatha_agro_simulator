@@ -1,11 +1,14 @@
 import 'package:effatha_agro_simulator/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:sizer/sizer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart';
 
 import '../../core/app_export.dart';
+import '../export_results_screen/export_results_screen.dart'
+    show SimulationExportArgs;
+
 import './widgets/comparison_card_widget.dart';
 import './widgets/crop_selector_widget.dart';
 import './widgets/input_card_widget.dart';
@@ -13,16 +16,13 @@ import './widgets/progress_indicator_widget.dart';
 import './widgets/results_summary_widget.dart';
 
 class SimulationDashboard extends StatefulWidget {
-  SimulationDashboard({super.key});
+  const SimulationDashboard({super.key});
 
   @override
   State<SimulationDashboard> createState() => _SimulationDashboardState();
 }
 
-class _SimulationDashboardState extends State<SimulationDashboard>
-    with TickerProviderStateMixin {
-  late TabController _tabController;
-
+class _SimulationDashboardState extends State<SimulationDashboard> {
   // Form data
   String _selectedCrop = 'soy';
   String _area = '100';
@@ -38,7 +38,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   String _priceUnit = r'$/sack';
   String _areaUnit = 'hectares';
   String _productivityUnit = 'sc/ha';
-  double _exchangeRate = 1.0;
 
   // Per-parameter units (configuráveis)
   String _costUnit = r'$/ha';
@@ -49,8 +48,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   Map<String, dynamic> _traditionalResults = {};
   Map<String, dynamic> _effathaResults = {};
 
-  // Backgrounds
-  final Map<String, String> _cropBackgrounds = {
+  // Backgrounds por cultura
+  final Map<String, String> _cropBackgrounds = const {
     'soy': 'assets/images/bg_sim_soy.jpg',
     'corn': 'assets/images/bg_sim_corn.jpg',
     'cotton': 'assets/images/bg_sim_cotton.jpg',
@@ -62,9 +61,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
   @override
   void initState() {
-    _loadKgPerSack();
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _loadKgPerSack();
     _calculateResults();
   }
 
@@ -72,15 +70,16 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     try {
       final prefs = await SharedPreferences.getInstance();
       final k = prefs.getDouble('kg_per_sack_weight');
+      if (!mounted) return;
       if (k != null && k > 0) {
-        setState(() {
-          _kgPerSackWeight = k;
-        });
+        setState(() => _kgPerSackWeight = k);
       }
-    } catch (_) {}
+    } catch (_) {
+      // mantém default 60.0
+    }
   }
 
-  // ---- Formatting helpers ----------------------------------------------------
+  // --------------------------- Helpers de formatação --------------------------
 
   String _fmtMoney(double value) {
     final f =
@@ -107,16 +106,9 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     }
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  // ---- Core calculations -----------------------------------------------------
+  // ----------------------------- Cálculos principais --------------------------
 
   void _calculateResults() {
-    // Entradas numéricas
     final double area = double.tryParse(_area) ?? 0.0;
     final double productivity = double.tryParse(_historicalProductivity) ?? 0.0;
     final double costs = double.tryParse(_historicalCosts) ?? 0.0;
@@ -125,14 +117,13 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     final double additionalProd =
         double.tryParse(_additionalProductivity) ?? 0.0;
 
-    // Conversões base (ha, kg/ha, $/ha)
     const double acresPerHectare = 2.47105;
 
-    // Área
+    // Área base (ha)
     final double areaHa =
         _areaUnit == 'acres' ? (area / acresPerHectare) : area;
 
-    // Preço por kg a partir da unidade selecionada
+    // Preço por kg conforme unidade escolhida
     double pricePerKg;
     switch (_priceUnit) {
       case r'$/kg':
@@ -217,10 +208,11 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
     setState(() {
       _traditionalResults = {
-        'investmentTotal': _fmtMoney(traditionalTotalCosts), // custo total
+        'investmentTotal': _fmtMoney(traditionalTotalCosts),
         'productionTotal': _formatTotalProduction(traditionalProductionKg),
         'profitabilityPercent': _fmtPercent(traditionalProfitability),
-        'roi': _fmtPercent(traditionalProfitability), // aproximação
+        // ROI tradicional ~ rentabilidade tradicional (aproximação)
+        'roi': _fmtPercent(traditionalProfitability),
         'profit': traditionalProfit,
         'revenue': traditionalRevenue,
       };
@@ -238,107 +230,115 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     });
   }
 
-  // ---- UI --------------------------------------------------------------------
+  // --------------------------------- UI --------------------------------------
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(_cropBackgrounds[_selectedCrop]!),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0x99000000),
-                Color(0x00000000),
-                Color(0x99000000),
-              ],
-              stops: [0.0, 0.3, 1.0],
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                _buildAppBar(theme, isDark),
-                _buildTabBar(theme, isDark),
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
+    // Usamos DefaultTabController para evitar erros de controller ausente
+    return DefaultTabController(
+      length: 3,
+      child: Builder(
+        builder: (outerCtx) {
+          final tabController = DefaultTabController.of(outerCtx)!;
+
+          return Scaffold(
+            body: Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(_cropBackgrounds[_selectedCrop]!),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0x99000000),
+                      Color(0x00000000),
+                      Color(0x99000000),
+                    ],
+                    stops: [0.0, 0.3, 1.0],
+                  ),
+                ),
+                child: SafeArea(
+                  child: Column(
                     children: [
-                      _buildDashboardTab(),
-                      _buildSettingsTab(),
-                      _buildProfileTab(),
+                      _buildAppBar(theme),
+                      _buildTabBar(theme),
+                      Expanded(
+                        child: TabBarView(
+                          children: [
+                            _buildDashboardTab(),
+                            _buildSettingsTab(),
+                            _buildProfileTab(),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
+
+            // FAB só na aba 0 (Dashboard)
+            floatingActionButton: AnimatedBuilder(
+              animation: tabController,
+              builder: (ctx, _) {
+                final idx = tabController.index;
+                if (idx != 0) return const SizedBox.shrink();
+                return FloatingActionButton.extended(
+                  onPressed: () => Navigator.pushNamed(
+                    context,
+                    '/export-results-screen',
+                    arguments: SimulationExportArgs(
+                      traditional: _traditionalResults,
+                      effatha: _effathaResults,
+                      cropKey: _selectedCrop,
+                      areaUnit: _areaUnit,
+                      productivityUnit: _productivityUnit,
+                      kgPerSack: _kgPerSackWeight,
+                    ),
+                  ),
+                  icon: CustomIconWidget(
+                    iconName: 'file_download',
+                    color: AppTheme.onSecondaryLight,
+                    size: 20,
+                  ),
+                  label: Text(
+                    AppLocalizations.of(context)!.export,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: AppTheme.onSecondaryLight,
+                    ),
+                  ),
+                  backgroundColor:
+                      isDark ? AppTheme.secondaryDark : AppTheme.secondaryLight,
+                );
+              },
+            ),
+          );
+        },
       ),
-      floatingActionButton: _tabController.index == 0
-          ? FloatingActionButton.extended(
-              onPressed: () => Navigator.pushNamed(
-                context,
-                '/export-results-screen',
-                arguments: {
-                  'traditional': _traditionalResults,
-                  'effatha': _effathaResults,
-                  'cropKey': _selectedCrop,
-                  'inputs': {
-                    'area': _area,
-                    'areaUnit': _areaUnit,
-                    'productivity': _historicalProductivity,
-                    'productivityUnit': _productivityUnit,
-                    'costs': _historicalCosts,
-                    'costUnit': _costUnit,
-                    'price': _cropPrice,
-                    'priceUnit': _priceUnit,
-                    'investment': _effathaInvestment,
-                    'investmentUnit': _investmentUnit,
-                    'additionalProductivity': _additionalProductivity,
-                    'additionalProductivityUnit': _additionalProductivityUnit,
-                  },
-                },
-              ),
-              icon: CustomIconWidget(
-                iconName: 'file_download',
-                color: AppTheme.onSecondaryLight,
-                size: 20,
-              ),
-              label: Text(
-                AppLocalizations.of(context)!.export,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: AppTheme.onSecondaryLight,
-                ),
-              ),
-              backgroundColor:
-                  isDark ? AppTheme.secondaryDark : AppTheme.secondaryLight,
-            )
-          : null,
     );
   }
 
-  Widget _buildAppBar(ThemeData theme, bool isDark) {
+  // ----------------------------- Subcomponentes -------------------------------
+
+  Widget _buildAppBar(ThemeData theme) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
       child: Row(
         children: [
-          CustomImageWidget(
-            imageUrl: 'assets/images/logo_effatha.png',
+          // Usa um PNG transparente (sem caixa)
+          Image.asset(
+            'assets/images/logo_effatha.png',
             width: 40,
             height: 40,
-            fit: BoxFit.cover,
+            fit: BoxFit.contain,
           ),
           SizedBox(width: 3.w),
           Expanded(
@@ -359,28 +359,25 @@ class _SimulationDashboardState extends State<SimulationDashboard>
           ),
           IconButton(
             onPressed: () => Navigator.pushNamed(context, '/settings-screen'),
-            icon: const CustomIconWidget(
-              iconName: 'settings',
-              color: Colors.white,
-              size: 24,
-            ),
+            icon: const Icon(Icons.settings, color: Colors.white, size: 24),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTabBar(ThemeData theme, bool isDark) {
+  Widget _buildTabBar(ThemeData theme) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 4.w),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const TabBar(
-        // (pode trocar por AppLocalizations se quiser)
-        tabs: [
+      child: TabBar(
+        tabs: const [
           Tab(text: 'Dashboard'),
+        //  Tab(text: 'Settings'),
+        //  Tab(text: 'Profile'),
           Tab(text: 'Settings'),
           Tab(text: 'Profile'),
         ],
@@ -396,10 +393,11 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   Widget _buildDashboardTab() {
     return RefreshIndicator(
       onRefresh: () async {
-        await Future.delayed(const Duration(seconds: 1));
+        await Future.delayed(const Duration(milliseconds: 400));
         _calculateResults();
       },
       child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.all(4.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -407,12 +405,11 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             CropSelectorWidget(
               selectedCrop: _selectedCrop,
               onCropChanged: (crop) {
-                setState(() {
-                  _selectedCrop = crop;
-                });
+                setState(() => _selectedCrop = crop);
               },
             ),
             SizedBox(height: 3.h),
+
             Text(
               AppLocalizations.of(context)!.comparisonOverview,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -428,13 +425,13 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                   ),
             ),
             SizedBox(height: 2.h),
+
             Row(
               children: [
                 Expanded(
                   child: ComparisonCardWidget(
                     title: AppLocalizations.of(context)!.traditionalFarming,
-                    value:
-                        _traditionalResults['profitabilityPercent'] ?? '0%',
+                    value: _traditionalResults['profitabilityPercent'] ?? '0%',
                     subtitle:
                         AppLocalizations.of(context)!.currentProfitability,
                   ),
@@ -452,7 +449,9 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 ),
               ],
             ),
+
             SizedBox(height: 3.h),
+
             Text(
               AppLocalizations.of(context)!.inputParameters,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -469,23 +468,19 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             ),
             SizedBox(height: 2.h),
 
-            // === Inputs =======================================================
+            // ---- Entradas ----
             InputCardWidget(
               title: AppLocalizations.of(context)!.area,
               value: _area,
               unit: _areaUnit,
               units: const ['hectares', 'acres'],
               onUnitChanged: (u) {
-                setState(() {
-                  _areaUnit = u;
-                });
+                setState(() => _areaUnit = u);
                 _calculateResults();
               },
               hintText: AppLocalizations.of(context)!.enterArea,
               onChanged: (value) {
-                setState(() {
-                  _area = value;
-                });
+                setState(() => _area = value);
                 _calculateResults();
               },
               inputFormatters: [
@@ -493,22 +488,19 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               ],
             ),
             SizedBox(height: 2.h),
+
             InputCardWidget(
               title: AppLocalizations.of(context)!.historicalProductivity,
               value: _historicalProductivity,
               unit: _productivityUnit,
               units: const ['sc/ha', 'sc/acre', 't/ha', 'kg/ha'],
               onUnitChanged: (u) {
-                setState(() {
-                  _productivityUnit = u;
-                });
+                setState(() => _productivityUnit = u);
                 _calculateResults();
               },
               hintText: AppLocalizations.of(context)!.enterProductivity,
               onChanged: (value) {
-                setState(() {
-                  _historicalProductivity = value;
-                });
+                setState(() => _historicalProductivity = value);
                 _calculateResults();
               },
               inputFormatters: [
@@ -516,22 +508,19 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               ],
             ),
             SizedBox(height: 2.h),
+
             InputCardWidget(
               title: AppLocalizations.of(context)!.historicalCosts,
               value: _historicalCosts,
               unit: _costUnit,
-              hintText: AppLocalizations.of(context)!.enterCostsPerArea,
-              onChanged: (value) {
-                setState(() {
-                  _historicalCosts = value;
-                });
-                _calculateResults();
-              },
               units: const [r'$/ha', r'$/acre', 'sc/ha', 'sc/acre'],
               onUnitChanged: (u) {
-                setState(() {
-                  _costUnit = u;
-                });
+                setState(() => _costUnit = u);
+                _calculateResults();
+              },
+              hintText: AppLocalizations.of(context)!.enterCostsPerArea,
+              onChanged: (value) {
+                setState(() => _historicalCosts = value);
                 _calculateResults();
               },
               inputFormatters: [
@@ -539,22 +528,19 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               ],
             ),
             SizedBox(height: 2.h),
+
             InputCardWidget(
               title: AppLocalizations.of(context)!.cropPrice,
               value: _cropPrice,
               unit: _priceUnit,
-              hintText: AppLocalizations.of(context)!.enterPrice,
-              onChanged: (value) {
-                setState(() {
-                  _cropPrice = value;
-                });
-                _calculateResults();
-              },
               units: const [r'$/sack', r'$/kg', r'$/t'],
               onUnitChanged: (u) {
-                setState(() {
-                  _priceUnit = u;
-                });
+                setState(() => _priceUnit = u);
+                _calculateResults();
+              },
+              hintText: AppLocalizations.of(context)!.enterPrice,
+              onChanged: (value) {
+                setState(() => _cropPrice = value);
                 _calculateResults();
               },
               inputFormatters: [
@@ -562,23 +548,19 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               ],
             ),
             SizedBox(height: 2.h),
+
             InputCardWidget(
               title: AppLocalizations.of(context)!.effathaInvestmentCost,
               value: _effathaInvestment,
               unit: _investmentUnit,
-              hintText:
-                  AppLocalizations.of(context)!.enterInvestmentPerArea,
-              onChanged: (value) {
-                setState(() {
-                  _effathaInvestment = value;
-                });
-                _calculateResults();
-              },
               units: const [r'$/ha', r'$/acre', 'sc/ha', 'sc/acre'],
               onUnitChanged: (u) {
-                setState(() {
-                  _investmentUnit = u;
-                });
+                setState(() => _investmentUnit = u);
+                _calculateResults();
+              },
+              hintText: AppLocalizations.of(context)!.enterInvestmentPerArea,
+              onChanged: (value) {
+                setState(() => _effathaInvestment = value);
                 _calculateResults();
               },
               inputFormatters: [
@@ -586,22 +568,20 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               ],
             ),
             SizedBox(height: 2.h),
+
             InputCardWidget(
               title: AppLocalizations.of(context)!.additionalProductivity,
               value: _additionalProductivity,
               unit: _additionalProductivityUnit,
               units: const ['sc/ha', 'sc/acre', 't/ha', 'kg/ha'],
               onUnitChanged: (u) {
-                setState(() {
-                  _additionalProductivityUnit = u;
-                });
+                setState(() => _additionalProductivityUnit = u);
                 _calculateResults();
               },
-              hintText: AppLocalizations.of(context)!.enterAdditionalProductivity,
+              hintText:
+                  AppLocalizations.of(context)!.enterAdditionalProductivity,
               onChanged: (value) {
-                setState(() {
-                  _additionalProductivity = value;
-                });
+                setState(() => _additionalProductivity = value);
                 _calculateResults();
               },
               inputFormatters: [
@@ -609,8 +589,9 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               ],
             ),
 
-            // === Profitability Analysis (card branco) =========================
             SizedBox(height: 3.h),
+
+            // ----------------- CARD BRANCO: Resultados -----------------
             Container(
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.92),
@@ -624,25 +605,37 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 ],
               ),
               padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ResultsSummaryWidget(
-                    traditionalResults: _traditionalResults,
-                    effathaResults: _effathaResults,
-                  ),
-                  SizedBox(height: 2.h),
-                  ProgressIndicatorWidget(
-                    title: AppLocalizations.of(context)!.roiProgress,
-                    value: double.tryParse(
-                            _effathaResults['roi']?.replaceAll('%', '') ??
-                                '0') ??
-                        0,
-                    maxValue: 100,
-                    displayValue: _effathaResults['roi'] ?? '0%',
-                    progressColor: AppTheme.successLight,
+              child: ResultsSummaryWidget(
+                traditionalResults: _traditionalResults,
+                effathaResults: _effathaResults,
+              ),
+            ),
+
+            SizedBox(height: 3.h),
+
+            // ----------------- CARD BRANCO: ROI Progress -----------------
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.92),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
                   ),
                 ],
+              ),
+              padding: const EdgeInsets.all(16),
+              child: ProgressIndicatorWidget(
+                title: AppLocalizations.of(context)!.roiProgress,
+                value: double.tryParse(
+                        (_effathaResults['roi'] as String? ?? '0')
+                            .replaceAll('%', '')) ??
+                    0,
+                maxValue: 100,
+                displayValue: _effathaResults['roi'] ?? '0%',
+                progressColor: AppTheme.successLight,
               ),
             ),
 
@@ -655,8 +648,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
   Widget _buildSettingsTab() {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return SingleChildScrollView(
       padding: EdgeInsets.all(4.w),
       child: Column(
@@ -694,36 +685,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // (Mantido conforme o atual do projeto)
-                Text(
-                  'Currency Settings',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 2.h),
-                DropdownButtonFormField<String>(
-                  value: _currency,
-                  onChanged: (value) {
-                    setState(() {
-                      _currency = value ?? 'USD';
-                    });
-                  },
-                  decoration: const InputDecoration(
-                    labelText: 'Currency',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: const [
-                    DropdownMenuItem(
-                        value: 'USD', child: Text('USD - US Dollar')),
-                    DropdownMenuItem(
-                        value: 'BRL', child: Text('BRL - Brazilian Real')),
-                    DropdownMenuItem(value: 'EUR', child: Text('EUR - Euro')),
-                    DropdownMenuItem(
-                        value: 'GBP', child: Text('GBP - British Pound')),
-                  ],
-                ),
-                SizedBox(height: 2.h),
+                // Mantemos apenas unidade de área (moedas fora do escopo)
                 Text(
                   AppLocalizations.of(context)!.areaUnit,
                   style: theme.textTheme.titleMedium?.copyWith(
@@ -734,28 +696,19 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 DropdownButtonFormField<String>(
                   value: _areaUnit,
                   onChanged: (value) {
-                    setState(() {
-                      _areaUnit = value ?? 'hectares';
-                    });
+                    setState(() => _areaUnit = value ?? 'hectares');
                   },
-                  // REMOVIDO const: há AppLocalizations dentro
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.areaUnit,
                     border: const OutlineInputBorder(),
                   ),
-                  // REMOVIDO const: há AppLocalizations dentro
                   items: [
                     DropdownMenuItem(
                         value: 'hectares',
-                        child: Text(
-                            AppLocalizations.of(context)!.hectares)),
+                        child: Text(AppLocalizations.of(context)!.hectares)),
                     DropdownMenuItem(
                         value: 'acres',
-                        child:
-                            Text(AppLocalizations.of(context)!.acres)),
-                    DropdownMenuItem(
-                        value: 'm²',
-                        child: Text(AppLocalizations.of(context)!.squareMeters)),
+                        child: Text(AppLocalizations.of(context)!.acres)),
                   ],
                 ),
                 SizedBox(height: 3.h),
@@ -774,7 +727,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
   Widget _buildProfileTab() {
     final theme = Theme.of(context);
-
     return SingleChildScrollView(
       padding: EdgeInsets.all(4.w),
       child: Column(
@@ -814,16 +766,14 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 CircleAvatar(
                   radius: 50,
                   backgroundColor: AppTheme.primaryLight,
-                  child: const CustomIconWidget(
-                    iconName: 'person',
-                    color: Colors.white,
-                    size: 50,
-                  ),
+                  child: const Icon(Icons.person, color: Colors.white, size: 50),
                 ),
                 SizedBox(height: 2.h),
-                const Text(
+                Text(
                   'Agricultural Professional',
-                  // (pode internacionalizar depois)
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 SizedBox(height: 1.h),
                 Text(
@@ -832,31 +782,21 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                     color: AppTheme.textSecondaryLight,
                   ),
                 ),
-                SizedBox(height: 3.h),
                 ListTile(
-                  leading: CustomIconWidget(
-                    iconName: 'analytics',
-                    color: AppTheme.primaryLight,
-                    size: 24,
-                  ),
+                  leading: Icon(Icons.analytics,
+                      color: AppTheme.primaryLight, size: 24),
                   title: Text(AppLocalizations.of(context)!.simulationsRun),
                   trailing: const Text('24'),
                 ),
                 ListTile(
-                  leading: CustomIconWidget(
-                    iconName: 'trending_up',
-                    color: AppTheme.successLight,
-                    size: 24,
-                  ),
+                  leading: Icon(Icons.trending_up,
+                      color: AppTheme.successLight, size: 24),
                   title: Text(AppLocalizations.of(context)!.averageROI),
                   trailing: const Text('18.5%'),
                 ),
                 ListTile(
-                  leading: CustomIconWidget(
-                    iconName: 'agriculture',
-                    color: AppTheme.primaryLight,
-                    size: 24,
-                  ),
+                  leading: Icon(Icons.agriculture,
+                      color: AppTheme.primaryLight, size: 24),
                   title: Text(AppLocalizations.of(context)!.preferredCrop),
                   trailing: Text(_selectedCrop.toUpperCase()),
                 ),
