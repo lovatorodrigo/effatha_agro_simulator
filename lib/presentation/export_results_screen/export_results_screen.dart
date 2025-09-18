@@ -1,4 +1,3 @@
-import 'package:effatha_agro_simulator/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
@@ -6,13 +5,11 @@ import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../core/app_export.dart';
 import '../services/report/report_service.dart';
 import 'report_template_widget.dart';
 import '../services/report/report_capture.dart';
 
-/// Mantido por compatibilidade: se você quiser continuar
-/// usando Navigation com classe tipada, ainda funciona.
+/// Mantido por compatibilidade com a navegação tipada
 class SimulationExportArgs {
   final Map<String, dynamic> traditional;
   final Map<String, dynamic> effatha;
@@ -55,16 +52,12 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
       if (mounted && k != null && k > 0) {
         setState(() => _kgPerSackFallback = k);
       }
-    } catch (_) {
-      // mantém fallback 60.0
-    }
+    } catch (_) {/* mantém 60.0 */}
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    // Aceita SimulationExportArgs OU Map<String, dynamic> (compatíveis)
+    // Aceita SimulationExportArgs OU Map<String, dynamic>
     final raw = ModalRoute.of(context)?.settings.arguments;
 
     Map<String, dynamic>? traditional;
@@ -82,39 +75,23 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
       productivityUnit = raw.productivityUnit;
       kgPerSack = raw.kgPerSack;
     } else if (raw is Map<String, dynamic>) {
-      // Esperado do push com Map:
-      // {
-      //   'traditional': {...},
-      //   'effatha': {...},
-      //   'cropKey': 'soy',
-      //   'inputs': {
-      //     'areaUnit': 'hectares',
-      //     'productivityUnit': 'sc/ha',
-      //     // (opcional) 'kgPerSack': 60.0
-      //   }
-      // }
       traditional = raw['traditional'] as Map<String, dynamic>?;
       effatha = raw['effatha'] as Map<String, dynamic>?;
       cropKey = (raw['cropKey'] as String?) ?? cropKey;
 
       final inputs = raw['inputs'] as Map<String, dynamic>?;
-
       if (inputs != null) {
         areaUnit = (inputs['areaUnit'] as String?) ?? areaUnit;
-        productivityUnit =
-            (inputs['productivityUnit'] as String?) ?? productivityUnit;
+        productivityUnit = (inputs['productivityUnit'] as String?) ?? productivityUnit;
         final k = inputs['kgPerSack'];
-        if (k is num && k > 0) {
-          kgPerSack = k.toDouble();
-        }
+        if (k is num && k > 0) kgPerSack = k.toDouble();
       }
     }
 
-    // Validação mínima
     if (traditional == null || effatha == null) {
       return Scaffold(
-        appBar: AppBar(title: Text(l10n.exportReport)),
-        body: Center(child: Text(l10n.noDataForExport)),
+        appBar: AppBar(title: const Text('Export Report')),
+        body: const Center(child: Text('No data received for export.')),
       );
     }
 
@@ -129,15 +106,14 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.exportReport),
+        title: const Text('Export Report'),
         actions: [
           IconButton(
-            tooltip: l10n.shareAsPng,
+            tooltip: 'Share as PNG',
             onPressed: () async {
               try {
                 final file = await _capture.saveAsPng(
-                  filename:
-                      'effatha_report_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.png',
+                  filename: 'effatha_report_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.png',
                 );
                 await Share.shareXFiles(
                   [XFile(file.path)],
@@ -146,7 +122,7 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
               } catch (e) {
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('${l10n.pngExportFailed}: $e')),
+                  SnackBar(content: Text('PNG export failed: $e')),
                 );
               }
             },
@@ -166,22 +142,16 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
             ),
           ),
 
-          // Prévia PNG / Área de captura (para exportar imagem)
+          // Prévia PNG / Área de captura
           Container(
             height: 340,
             width: double.infinity,
             color: Colors.black12,
             child: RepaintBoundary(
               key: _capture.repaintKey,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ReportTemplateWidget(
-                  traditional: traditional,
-                  effatha: effatha,
-                  cropKey: cropKey,
-                  areaUnit: areaUnit,
-                  productivityUnit: productivityUnit,
-                ),
+              child: const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: _ReportPreviewShell(),
               ),
             ),
           ),
@@ -190,17 +160,57 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          // Compartilhar PDF
           final bytes = await ReportService.buildSimulationPdf(reportData);
           await Printing.sharePdf(
             bytes: bytes,
-            filename:
-                'effatha_report_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.pdf',
+            filename: 'effatha_report_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.pdf',
           );
         },
         icon: const Icon(Icons.picture_as_pdf_outlined),
-        label: Text(l10n.sharePdf),
+        label: const Text('Share PDF'),
       ),
+    );
+  }
+}
+
+/// Wrapper só para ler o mesmo arguments que a tela recebeu e
+/// montar o ReportTemplateWidget sem repetir parsing.
+class _ReportPreviewShell extends StatelessWidget {
+  const _ReportPreviewShell();
+
+  @override
+  Widget build(BuildContext context) {
+    final raw = ModalRoute.of(context)?.settings.arguments;
+
+    Map<String, dynamic>? traditional;
+    Map<String, dynamic>? effatha;
+    String cropKey = 'soy';
+    String areaUnit = 'hectares';
+    String productivityUnit = 'sc/ha';
+
+    if (raw is SimulationExportArgs) {
+      traditional = raw.traditional;
+      effatha = raw.effatha;
+      cropKey = raw.cropKey;
+      areaUnit = raw.areaUnit;
+      productivityUnit = raw.productivityUnit;
+    } else if (raw is Map<String, dynamic>) {
+      traditional = raw['traditional'] as Map<String, dynamic>?;
+      effatha = raw['effatha'] as Map<String, dynamic>?;
+      cropKey = (raw['cropKey'] as String?) ?? cropKey;
+      final inputs = raw['inputs'] as Map<String, dynamic>?;
+      if (inputs != null) {
+        areaUnit = (inputs['areaUnit'] as String?) ?? areaUnit;
+        productivityUnit = (inputs['productivityUnit'] as String?) ?? productivityUnit;
+      }
+    }
+
+    return ReportTemplateWidget(
+      traditional: traditional ?? const {},
+      effatha: effatha ?? const {},
+      cropKey: cropKey,
+      areaUnit: areaUnit,
+      productivityUnit: productivityUnit,
     );
   }
 }
