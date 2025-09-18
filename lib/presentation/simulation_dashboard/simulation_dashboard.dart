@@ -38,7 +38,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   String _areaUnit = 'hectares';
   String _productivityUnit = 'sc/ha';
 
-  // Per-parameter units (configuráveis)
+  // Per-parameter units
   String _costUnit = r'$/ha';
   String _investmentUnit = r'$/ha';
   String _additionalProductivityUnit = 'sc/ha';
@@ -112,7 +112,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
   // Cálculos
   void _calculateResults() {
-    // Entradas
     final double area = double.tryParse(_area) ?? 0.0;
     final double productivity = double.tryParse(_historicalProductivity) ?? 0.0;
     final double costs = double.tryParse(_historicalCosts) ?? 0.0;
@@ -121,7 +120,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     final double additionalProd =
         double.tryParse(_additionalProductivity) ?? 0.0;
 
-    // Conversões base (ha, kg/ha, $/ha)
     const double acresPerHectare = 2.47105;
 
     // Área em ha
@@ -370,7 +368,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         borderRadius: BorderRadius.circular(12),
       ),
       child: TabBar(
-        controller: _tabController, // <-- FIX: agora com controller
+        controller: _tabController,
         tabs: const [
           Tab(text: 'Dashboard'),
           Tab(text: 'Settings'),
@@ -578,7 +576,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
             SizedBox(height: 3.h),
 
-            // ---------- CARD BRANCO: Padrão Fazenda x Effatha ----------
+            // ---------- CARD BRANCO: Resultados + Rentabilidade ----------
             _buildResultsWhiteCard(context),
 
             SizedBox(height: 10.h),
@@ -588,7 +586,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     );
   }
 
-  // Card branco com os campos do novo modelo
+  // Card branco com os campos do novo modelo + seção "Rentabilidade"
   Widget _buildResultsWhiteCard(BuildContext context) {
     final double tProfit = (_traditionalResults['profit'] as double?) ?? 0.0;
     final double eProfit = (_effathaResults['profit'] as double?) ?? 0.0;
@@ -598,6 +596,19 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
     final double tCosts = (_traditionalResults['_totalCosts'] as double?) ?? 0;
     final double eCosts = (_effathaResults['_totalCosts'] as double?) ?? 0;
+
+    final double tPerc =
+        (_traditionalResults['_profitabilityRaw'] as double?) ?? 0.0;
+    final double ePerc =
+        (_effathaResults['_profitabilityRaw'] as double?) ?? 0.0;
+
+    // Diferença em R$ conforme pedido (Effatha - Padrão)
+    final double diffProfitMoney = eProfit - tProfit;
+
+    // Comparação (%) conforme especificação do usuário:
+    // dividir o valor % Padrão Fazenda / % Effatha * 100
+    final double percComparison =
+        ePerc != 0 ? (tPerc / ePerc) * 100.0 : 0.0;
 
     String prodToSc(double kg) {
       final sc = _kgPerSackWeight > 0 ? kg / _kgPerSackWeight : 0.0;
@@ -621,8 +632,9 @@ class _SimulationDashboardState extends State<SimulationDashboard>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Título atualizado
           Text(
-            'Padrão Fazenda x Effatha',
+            'Resultados',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -651,6 +663,91 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             label: 'Rentabilidade Total (%)',
             left: _traditionalResults['profitabilityPercent'] ?? '0%',
             right: _effathaResults['profitabilityPercent'] ?? '0%',
+          ),
+
+          SizedBox(height: 2.0.h),
+
+          // Seção de destaque: Rentabilidade
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(3.5.w),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF2ecc71), Color(0xFF27ae60)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x33000000),
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                )
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Rentabilidade',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+                SizedBox(height: 0.8.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _highlightTile(
+                        context,
+                        title: 'Diferença (R\$)',
+                        value: _fmtMoney(diffProfitMoney),
+                      ),
+                    ),
+                    SizedBox(width: 3.w),
+                    Expanded(
+                      child: _highlightTile(
+                        context,
+                        title: 'Comparação (%)',
+                        value: _fmtPercent(percComparison, decimals: 2),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _highlightTile(BuildContext context,
+      {required String title, required String value}) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 1.2.h, horizontal: 3.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.18),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white.withOpacity(0.28)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style: Theme.of(context)
+                  .textTheme
+                  .labelSmall
+                  ?.copyWith(color: Colors.white70, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
           ),
         ],
       ),
@@ -787,7 +884,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   }
 
   Widget _buildProfileTab() {
-    final theme = Theme.of(context);
+    final theme = Theme of(context);
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(4.w),
