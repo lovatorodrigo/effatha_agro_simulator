@@ -884,7 +884,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   }
 
   Widget _buildProfileTab() {
-    final theme = Theme of(context);
+    final theme = Theme.of(context);
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(4.w),
