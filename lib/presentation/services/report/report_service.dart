@@ -267,6 +267,7 @@ class ReportService {
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
+          // Título continua branco (melhor contraste sobre o gradiente)
           pw.Text(
             title,
             style: pw.TextStyle(
@@ -292,12 +293,13 @@ class ReportService {
     );
   }
 
+  // >>> AQUI fizemos a troca de cores internas para VERDE <<<
   static pw.Widget _miniTile(String label, String value) {
     return pw.Container(
       decoration: pw.BoxDecoration(
-        color: PdfColor(1, 1, 1, 0.16),
+        color: PdfColor(1, 1, 1, 0.16), // fundo translúcido (sem withOpacity)
         borderRadius: pw.BorderRadius.circular(8),
-        border: pw.Border.all(color: PdfColors.white, width: 0.3),
+        border: pw.Border.all(color: PdfColors.green, width: 0.3), // borda verde
       ),
       padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 10),
       child: pw.Column(
@@ -306,7 +308,7 @@ class ReportService {
           pw.Text(
             label,
             style: pw.TextStyle(
-              color: PdfColors.white,
+              color: PdfColors.green, // label em verde
               fontSize: 9,
               fontWeight: pw.FontWeight.bold,
             ),
@@ -315,7 +317,7 @@ class ReportService {
           pw.Text(
             value,
             style: pw.TextStyle(
-              color: PdfColors.white,
+              color: PdfColors.green, // valor em verde
               fontSize: 12,
               fontWeight: pw.FontWeight.bold,
             ),
@@ -346,4 +348,3 @@ class ReportService {
     }
   }
 }
-
