@@ -1,42 +1,60 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:sizer/sizer.dart';
 
-import '../../../core/app_export.dart';
-import '../../../theme/app_theme.dart';
-
+/// Card de input com:
+/// - título
+/// - campo de texto com controlador persistente
+/// - seletor de unidade (opcional)
+/// - sufixo (opcional)
+///
+/// Observações:
+/// - Sem `const` em widgets que dependem de valores dinâmicos.
+/// - Debounce de 250ms no onChanged para evitar rebuilds a cada dígito.
+/// - `units` + `onUnitChanged` são opcionais. Quando presentes, mostra um seletor.
 class InputCardWidget extends StatefulWidget {
-  final String widget.title;
-  final String value;
-  final String widget.unit;
-  final String widget.hintText;
-  final ValueChanged<String> onChanged;
-  final TextInputType widget.keyboardType;
-  final List<TextInputFormatter>? widget.inputFormatters;
-  final Widget? widget.suffixWidget;
-
-  /// Units available for selection (e.g. ['hectares','acres'] or ['sacks/ha','sacks/acre']).
-  /// If null or length <= 1, the widget.unit will be shown as a static label.
-  final List<String>? widget.widget.units;
-  /// Called when user selects a different widget.unit from [widget.widget.units].
-  final ValueChanged<String>? widget.onUnitChanged;
-
   const InputCardWidget({
     super.key,
-    required this.widget.title,
+    required this.title,
     required this.value,
-    required this.widget.unit,
-    required this.widget.hintText,
+    required this.hintText,
     required this.onChanged,
-    this.widget.keyboardType = TextInputType.number,
-    this.widget.inputFormatters,
-    this.widget.suffixWidget,
-    this.widget.widget.units,
-    this.widget.onUnitChanged,
+    this.unit = '',
+    this.units,
+    this.onUnitChanged,
+    this.inputFormatters,
+    this.keyboardType,
+    this.suffixWidget,
   });
 
-  
+  final String title;
+  final String value;
+
+  /// Texto do hint no campo de entrada
+  final String hintText;
+
+  /// Unidade selecionada (texto exibido à direita, ex.: "sc/ha")
+  final String unit;
+
+  /// Lista de unidades disponíveis (se null/empty, não mostra seletor)
+  final List<String>? units;
+
+  /// Callback quando a unidade muda
+  final ValueChanged<String>? onUnitChanged;
+
+  /// Callback do valor digitado (com debounce)
+  final ValueChanged<String> onChanged;
+
+  /// Formatadores opcionais para o campo
+  final List<TextInputFormatter>? inputFormatters;
+
+  /// Tipo de teclado
+  final TextInputType? keyboardType;
+
+  /// Widget opcional a ser exibido como sufixo (ex.: ícone)
+  final Widget? suffixWidget;
+
   @override
   State<InputCardWidget> createState() => _InputCardWidgetState();
 }
@@ -54,6 +72,7 @@ class _InputCardWidgetState extends State<InputCardWidget> {
   @override
   void didUpdateWidget(covariant InputCardWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // Se o valor vindo de cima mudou, sincroniza o controlador
     if (oldWidget.value != widget.value && _controller.text != widget.value) {
       _controller.text = widget.value;
     }
@@ -66,94 +85,118 @@ class _InputCardWidgetState extends State<InputCardWidget> {
     super.dispose();
   }
 
+  void _onChangedWithDebounce(String v) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 250), () {
+      widget.onChanged(v);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final controller = TextEditingController(text: value);
-
-    Widget widget.unitWidget;
-    if (widget.widget.units == null || widget.widget.units!.length <= 1 || widget.onUnitChanged == null) {
-      widget.unitWidget = Text(
-        widget.unit,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: isDark
-              ? AppTheme.textSecondaryDark
-              : AppTheme.textSecondaryLight,
-        ),
-      );
-    } else {
-      widget.unitWidget = PopupMenuButton<String>(
-        tooltip: 'Alterar unidade',
-        initialValue: widget.unit,
-        onSelected: widget.onUnitChanged,
-        itemBuilder: (ctx) => widget.widget.units!
-            .map((u) => PopupMenuItem<String>(value: u, child: Text(u)))
-            .toList(),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(widget.unit,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: isDark
-                      ? AppTheme.textSecondaryDark
-                      : AppTheme.textSecondaryLight,
-                )),
-            SizedBox(width: 6),
-            const Icon(Icons.swap_vert, size: 16),
-          ],
-        ),
-      );
-    }
 
     return Container(
-      padding: EdgeInsets.all(3.w),
-      decoration: AppTheme.cardDecoration(isLight: !isDark),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.92),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2)),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Título
+          Text(
+            widget.title,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 10),
+
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Campo de texto
               Expanded(
-                child: Text(
-                  widget.title,
-                  style: theme.textTheme.widget.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: isDark
-                        ? AppTheme.textPrimaryDark
-                        : AppTheme.textPrimaryLight,
+                child: TextField(
+                  controller: _controller,
+                  keyboardType: widget.keyboardType ?? const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: widget.inputFormatters,
+                  onChanged: _onChangedWithDebounce,
+                  decoration: InputDecoration(
+                    hintText: widget.hintText,
+                    border: const OutlineInputBorder(),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   ),
                 ),
               ),
-              widget.unitWidget,
+
+              const SizedBox(width: 12),
+
+              // Seletor de unidade (se units != null && !empty)
+              if (widget.units != null && widget.units!.isNotEmpty)
+                _UnitSelector(
+                  currentUnit: widget.unit,
+                  units: widget.units!,
+                  onChanged: widget.onUnitChanged,
+                ),
+
+              // Sufixo opcional
+              if (widget.suffixWidget != null) ...[
+                const SizedBox(width: 8),
+                widget.suffixWidget!,
+              ],
             ],
           ),
-          SizedBox(height: 1.h),
-          TextField(
-            controller: _controller,
-            widget.keyboardType: widget.keyboardType,
-            widget.inputFormatters: widget.inputFormatters,
-            decoration: InputDecoration(
-              widget.hintText: widget.hintText,
-              border: const OutlineInputBorder(),
-              isDense: true,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            ),
-            onChanged: (v){ 
-              _debounce?.cancel();
-              _debounce = Timer(const Duration(milliseconds: 250), (){
-                widget.onChanged(v);
-              });
-            },
-          ),
-          if (widget.suffixWidget != null) ...[
-            SizedBox(height: 1.h),
-            widget.suffixWidget!,
-          ],
         ],
+      ),
+    );
+  }
+}
+
+class _UnitSelector extends StatelessWidget {
+  const _UnitSelector({
+    required this.currentUnit,
+    required this.units,
+    required this.onChanged,
+  });
+
+  final String currentUnit;
+  final List<String> units;
+  final ValueChanged<String>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        border: Border.all(color: Colors.black12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: units.contains(currentUnit) ? currentUnit : (units.isNotEmpty ? units.first : null),
+          isDense: true,
+          onChanged: (v) {
+            if (v != null && onChanged != null) onChanged!(v);
+          },
+          items: units
+              .map((u) => DropdownMenuItem<String>(
+                    value: u,
+                    child: Text(u),
+                  ))
+              .toList(),
+        ),
       ),
     );
   }
