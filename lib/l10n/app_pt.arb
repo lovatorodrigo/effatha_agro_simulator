@@ -55,12 +55,9 @@
   "simulationsRun": "Simulações realizadas",
   "profile": "Perfil",
   "login": "Login",
-
-  // ==== Novas chaves para unidades e seções ====
   "priceUnit_sc": "$/sc",
   "priceUnit_kg": "$/kg",
   "priceUnit_t": "$/t",
-
   "resultsTitle": "Resultados",
   "profitabilitySection": "Rentabilidade",
   "totalRevenue": "Faturamento Total",
