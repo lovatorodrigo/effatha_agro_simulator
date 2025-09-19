@@ -12,6 +12,8 @@ import './widgets/crop_selector_widget.dart';
 import './widgets/input_card_widget.dart';
 import './widgets/profile_tab_widget.dart';
 
+// >>> IMPORTA O USERPREFS (novo utilitário simples)
+import 'package:effatha_agro_simulator/services/user_prefs.dart';
 
 class SimulationDashboard extends StatefulWidget {
   SimulationDashboard({super.key});
@@ -60,12 +62,40 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     'orange': 'assets/images/bg_sim_orange.jpg',
   };
 
+  // ---------- CONTROLLERS DO PERFIL (no State) ----------
+  late TextEditingController _nameCtrl;
+  late TextEditingController _emailCtrl;
+  late TextEditingController _pwdCtrl;
+  late TextEditingController _pwd2Ctrl;
+  String? _photoUrl;
+
   @override
   void initState() {
     _loadKgPerSack();
     super.initState();
+
     _tabController = TabController(length: 3, vsync: this);
+
+    // Inicializa controllers (valores default – serão sobrescritos pelo _loadUserFromPrefs)
+    _nameCtrl = TextEditingController(text: 'Agricultural Professional');
+    _emailCtrl = TextEditingController(text: 'user@effatha.com');
+    _pwdCtrl = TextEditingController();
+    _pwd2Ctrl = TextEditingController();
+
+    _loadUserFromPrefs(); // carrega nome/email/photo se existirem
     _calculateResults();
+  }
+
+  Future<void> _loadUserFromPrefs() async {
+    try {
+      final u = await UserPrefs.get();
+      if (!mounted || u == null) return;
+      setState(() {
+        _nameCtrl.text = u.name;
+        _emailCtrl.text = u.email;
+        _photoUrl = u.photoUrl;
+      });
+    } catch (_) {}
   }
 
   Future<void> _loadKgPerSack() async {
@@ -109,6 +139,11 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   @override
   void dispose() {
     _tabController.dispose();
+    // libera controllers
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _pwdCtrl.dispose();
+    _pwd2Ctrl.dispose();
     super.dispose();
   }
 
@@ -803,7 +838,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     );
   }
 
-  // Settings e Profile (mantidos)
+  // Settings e Profile (mantidos, com Profile atualizado)
   Widget _buildSettingsTab() {
     final theme = Theme.of(context);
 
@@ -891,29 +926,23 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   Widget _buildProfileTab() {
     final theme = Theme.of(context);
 
-    // Controladores locais (simples e suficientes para esta tela).
-    final nameCtrl = TextEditingController(text: 'Agricultural Professional');
-    final emailCtrl = TextEditingController(text: 'user@effatha.com');
-    final pwdCtrl = TextEditingController();
-    final pwd2Ctrl = TextEditingController();
-
-    void saveChanges() {
-      // Validação simples de e-mail e senha (quando informada)
-      final email = emailCtrl.text.trim();
+    Future<void> saveChanges() async {
+      // validação simples
+      final email = _emailCtrl.text.trim();
       if (email.isEmpty || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Informe um e-mail válido.')),
         );
         return;
       }
-      if (pwdCtrl.text.isNotEmpty || pwd2Ctrl.text.isNotEmpty) {
-        if (pwdCtrl.text != pwd2Ctrl.text) {
+      if (_pwdCtrl.text.isNotEmpty || _pwd2Ctrl.text.isNotEmpty) {
+        if (_pwdCtrl.text != _pwd2Ctrl.text) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('As senhas não conferem.')),
           );
           return;
         }
-        if (pwdCtrl.text.length < 6) {
+        if (_pwdCtrl.text.length < 6) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('A senha deve ter pelo menos 6 caracteres.')),
           );
@@ -921,15 +950,27 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         }
       }
 
+      // Persiste localmente (mantém o Profile com seus dados)
+      await UserPrefs.save(UserData(
+        name: _nameCtrl.text.trim(),
+        email: _emailCtrl.text.trim(),
+        photoUrl: _photoUrl,
+      ));
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Alterações salvas.')),
       );
 
-      // Limpa os campos de senha após salvar
-      pwdCtrl.clear();
-      pwd2Ctrl.clear();
+      _pwdCtrl.clear();
+      _pwd2Ctrl.clear();
       FocusScope.of(context).unfocus();
       setState(() {});
+    }
+
+    Future<void> doLogout() async {
+      await UserPrefs.clear(); // logout simples
+      if (!mounted) return;
+      Navigator.pushNamed(context, '/login-screen');
     }
 
     return SingleChildScrollView(
@@ -967,26 +1008,31 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Avatar + nome + e-mail atuais (preview)
+                // Avatar + nome + e-mail atuais
                 Column(
                   children: [
                     CircleAvatar(
                       radius: 50,
                       backgroundColor: AppTheme.primaryLight,
-                      child: const CustomIconWidget(
-                        iconName: 'person',
-                        color: Colors.white,
-                        size: 50,
-                      ),
+                      backgroundImage: (_photoUrl != null && _photoUrl!.isNotEmpty)
+                          ? NetworkImage(_photoUrl!)
+                          : null,
+                      child: (_photoUrl == null || _photoUrl!.isEmpty)
+                          ? const CustomIconWidget(
+                              iconName: 'person',
+                              color: Colors.white,
+                              size: 50,
+                            )
+                          : null,
                     ),
                     SizedBox(height: 1.5.h),
                     Text(
-                      nameCtrl.text,
+                      _nameCtrl.text.isEmpty ? '—' : _nameCtrl.text,
                       style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                     ),
                     SizedBox(height: 0.5.h),
                     Text(
-                      emailCtrl.text,
+                      _emailCtrl.text.isEmpty ? '—' : _emailCtrl.text,
                       style: theme.textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondaryLight),
                     ),
                   ],
@@ -996,7 +1042,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
                 // Campos de edição
                 TextField(
-                  controller: nameCtrl,
+                  controller: _nameCtrl,
                   decoration: const InputDecoration(
                     labelText: 'Nome',
                     border: OutlineInputBorder(),
@@ -1005,7 +1051,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 ),
                 SizedBox(height: 1.5.h),
                 TextField(
-                  controller: emailCtrl,
+                  controller: _emailCtrl,
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
                     labelText: 'Email',
@@ -1015,9 +1061,9 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 ),
                 SizedBox(height: 1.5.h),
 
-                // Troca de senha (opcional)
+                // Troca de senha (opcional - só local para validação de exemplo)
                 TextField(
-                  controller: pwdCtrl,
+                  controller: _pwdCtrl,
                   obscureText: true,
                   decoration: const InputDecoration(
                     labelText: 'Nova senha (opcional)',
@@ -1026,7 +1072,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 ),
                 SizedBox(height: 1.2.h),
                 TextField(
-                  controller: pwd2Ctrl,
+                  controller: _pwd2Ctrl,
                   obscureText: true,
                   decoration: const InputDecoration(
                     labelText: 'Confirmar nova senha',
@@ -1049,7 +1095,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
                 SizedBox(height: 2.h),
 
-                // Resumo (exibe as mesmas infos do card antigo)
+                // Resumo (placeholders)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const CustomIconWidget(
@@ -1083,7 +1129,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
                 SizedBox(height: 1.5.h),
                 ElevatedButton(
-                  onPressed: () => Navigator.pushNamed(context, '/login-screen'),
+                  onPressed: doLogout,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.errorLight,
                     foregroundColor: Colors.white,
