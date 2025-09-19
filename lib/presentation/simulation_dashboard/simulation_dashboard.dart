@@ -10,10 +10,8 @@ import '../export_results_screen/export_results_screen.dart';
 import './widgets/comparison_card_widget.dart';
 import './widgets/crop_selector_widget.dart';
 import './widgets/input_card_widget.dart';
-// ignore: unused_import
 import './widgets/profile_tab_widget.dart';
 
-import 'package:effatha_agro_simulator/presentation/services/user_prefs.dart';
 
 class SimulationDashboard extends StatefulWidget {
   SimulationDashboard({super.key});
@@ -26,7 +24,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     with TickerProviderStateMixin {
   late TabController _tabController;
 
-  // Form data
+  // Form data (default 0)
   String _selectedCrop = 'soy';
   String _area = '';
   String _historicalProductivity = '';
@@ -51,15 +49,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   Map<String, dynamic> _traditionalResults = {};
   Map<String, dynamic> _effathaResults = {};
 
-  // User (perfil)
-  late TextEditingController _nameCtrl;
-  late TextEditingController _emailCtrl;
-  late TextEditingController _pwdCtrl;
-  late TextEditingController _pwd2Ctrl;
-  String? _photoUrl;
-
   // Backgrounds por cultura
-  final Map<String, String> _cropBackgrounds = const {
+  final Map<String, String> _cropBackgrounds = {
     'soy': 'assets/images/bg_sim_soy.jpg',
     'corn': 'assets/images/bg_sim_corn.jpg',
     'cotton': 'assets/images/bg_sim_cotton.jpg',
@@ -71,57 +62,30 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
   @override
   void initState() {
-    super.initState(); // importante vir primeiro
-    _tabController = TabController(length: 3, vsync: this)
-      ..addListener(() {
-        if (mounted) setState(() {}); // atualiza FAB ao trocar de aba
-      });
-
-    _nameCtrl = TextEditingController(text: 'Agricultural Professional');
-    _emailCtrl = TextEditingController(text: 'user@effatha.com');
-    _pwdCtrl = TextEditingController();
-    _pwd2Ctrl = TextEditingController();
-
     _loadKgPerSack();
-    _loadUserFromPrefs();
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
     _calculateResults();
-  }
-
-  Future<void> _loadUserFromPrefs() async {
-    try {
-      final u = await UserPrefs.get();
-      if (!mounted || u == null) return;
-      setState(() {
-        _nameCtrl.text = u.name;
-        _emailCtrl.text = u.email;
-        _photoUrl = u.photoUrl;
-      });
-    } catch (_) {}
   }
 
   Future<void> _loadKgPerSack() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final k = prefs.getDouble('kg_per_sack_weight');
-      if (k != null && k > 0 && mounted) {
-        setState(() => _kgPerSackWeight = k);
+      if (k != null && k > 0) {
+        setState(() {
+          _kgPerSackWeight = k;
+        });
       }
     } catch (_) {}
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    _nameCtrl.dispose();
-    _emailCtrl.dispose();
-    _pwdCtrl.dispose();
-    _pwd2Ctrl.dispose();
-    super.dispose();
+  // Helpers de formatação
+  String _fmtMoney(double value) {
+    final f =
+        NumberFormat.currency(locale: 'pt_BR', symbol: r'$ ', decimalDigits: 2);
+    return f.format(value);
   }
-
-  String _fmtMoney(double value) =>
-      NumberFormat.currency(locale: 'pt_BR', symbol: r'$ ', decimalDigits: 2)
-          .format(value);
 
   String _fmtPercent(double value, {int decimals = 1}) {
     final rounded = double.parse(value.toStringAsFixed(decimals));
@@ -142,6 +106,13 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     }
   }
 
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  // Cálculos
   void _calculateResults() {
     final double area = double.tryParse(_area) ?? 0.0;
     final double productivity = double.tryParse(_historicalProductivity) ?? 0.0;
@@ -152,8 +123,12 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         double.tryParse(_additionalProductivity) ?? 0.0;
 
     const double acresPerHectare = 2.47105;
-    final double areaHa = _areaUnit == 'acres' ? (area / acresPerHectare) : area;
 
+    // Área em ha
+    final double areaHa =
+        _areaUnit == 'acres' ? (area / acresPerHectare) : area;
+
+    // Preço por kg
     double pricePerKg;
     switch (_priceUnit) {
       case r'$/kg':
@@ -162,12 +137,13 @@ class _SimulationDashboardState extends State<SimulationDashboard>
       case r'$/t':
         pricePerKg = price / 1000.0;
         break;
-      case r'$/sc':
+      case r'$/sc': // saca
       default:
         pricePerKg = _kgPerSackWeight > 0 ? (price / _kgPerSackWeight) : 0.0;
         break;
     }
 
+    // Conversores
     double toKgPerHa(double value, String unit) {
       switch (unit) {
         case 'kg/ha':
@@ -205,14 +181,17 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     final double costsPerHa = toDollarsPerHa(costs, _costUnit);
     final double investmentPerHa = toDollarsPerHa(investment, _investmentUnit);
 
+    // Tradicional
     final double traditionalProductionKg = areaHa * productivityKgPerHa;
     final double traditionalRevenue = traditionalProductionKg * pricePerKg;
     final double traditionalTotalCosts = areaHa * costsPerHa;
-    final double traditionalProfit = traditionalRevenue - traditionalTotalCosts;
+    final double traditionalProfit =
+        traditionalRevenue - traditionalTotalCosts;
     final double traditionalProfitability = traditionalTotalCosts > 0
         ? (traditionalProfit / traditionalTotalCosts) * 100.0
         : 0.0;
 
+    // Com Effatha
     final double effathaProductionKg =
         areaHa * (productivityKgPerHa + additionalProdKgPerHa);
     final double effathaRevenue = effathaProductionKg * pricePerKg;
@@ -223,7 +202,10 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         ? (effathaProfit / effathaTotalCosts) * 100.0
         : 0.0;
 
+    // Métricas adicionais
     final double additionalProfit = effathaProfit - traditionalProfit;
+
+    // percentual do LUCRO adicional (modelo antigo)
     final double additionalProfitPercent = traditionalProfit.abs() > 0
         ? (additionalProfit / traditionalProfit) * 100.0
         : 0.0;
@@ -232,7 +214,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         ? (additionalProfit / effathaInvestmentTotal) * 100.0
         : 0.0;
 
-    if (!mounted) return;
     setState(() {
       _traditionalResults = {
         'investmentTotal': _fmtMoney(traditionalTotalCosts),
@@ -262,49 +243,34 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     });
   }
 
+  // UI
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // caminho do background (com fallback)
-    final bgPath = _cropBackgrounds[_selectedCrop] ??
-        'assets/images/bg_sim_soy.jpg';
-
     return Scaffold(
-      body: Stack(
-        children: [
-          // BACKGROUND resiliente (não quebra se o asset faltar)
-          Positioned.fill(
-            child: Image.asset(
-              bgPath,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF6A994E), Color(0xFF386641)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
-              ),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage(_cropBackgrounds[_selectedCrop]!),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0x99000000),
+                Color(0x00000000),
+                Color(0x99000000),
+              ],
+              stops: [0.0, 0.3, 1.0],
             ),
           ),
-          // GRADIENT overlay
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0x99000000), Color(0x00000000), Color(0x99000000)],
-                  stops: [0.0, 0.3, 1.0],
-                ),
-              ),
-            ),
-          ),
-          // CONTEÚDO
-          SafeArea(
+          child: SafeArea(
             child: Column(
               children: [
                 _buildAppBar(theme, isDark),
@@ -322,7 +288,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               ],
             ),
           ),
-        ],
+        ),
       ),
       floatingActionButton: _tabController.index == 0
           ? FloatingActionButton.extended(
@@ -340,7 +306,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                   ),
                 );
               },
-              icon: const CustomIconWidget(
+              icon: CustomIconWidget(
                 iconName: 'file_download',
                 color: AppTheme.onSecondaryLight,
                 size: 20,
@@ -358,28 +324,24 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     );
   }
 
-  // ---------- APP BAR ----------
   Widget _buildAppBar(ThemeData theme, bool isDark) {
-    return Padding(
+    return Container(
       padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
       child: Row(
         children: [
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 64, maxWidth: 64),
-            child: Image.asset('assets/images/logo_effatha.png',
-                fit: BoxFit.contain, errorBuilder: (_, __, ___) {
-              return const SizedBox(width: 48, height: 48);
-            }),
+          CustomImageWidget(
+            imageUrl: 'assets/images/logo_effatha.png',
+            width: 40,
+            height: 40,
+            fit: BoxFit.cover,
           ),
           SizedBox(width: 3.w),
           Expanded(
             child: Text(
-              'Effatha Agro\nSimulator',
-              maxLines: 2,
+              'Effatha Agro Simulator',
               style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: Colors.white,
-                height: 1.0,
                 shadows: const [
                   Shadow(
                     color: Colors.black54,
@@ -395,7 +357,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             icon: const CustomIconWidget(
               iconName: 'settings',
               color: Colors.white,
-              size: 26,
+              size: 24,
             ),
           ),
         ],
@@ -407,8 +369,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 4.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(14),
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: TabBar(
         controller: _tabController,
@@ -429,18 +391,21 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   Widget _buildDashboardTab() {
     return RefreshIndicator(
       onRefresh: () async {
-        await Future.delayed(const Duration(milliseconds: 600));
+        await Future.delayed(const Duration(seconds: 1));
         _calculateResults();
       },
       child: SingleChildScrollView(
         padding: EdgeInsets.all(4.w),
-        physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CropSelectorWidget(
               selectedCrop: _selectedCrop,
-              onCropChanged: (crop) => setState(() => _selectedCrop = crop),
+              onCropChanged: (crop) {
+                setState(() {
+                  _selectedCrop = crop;
+                });
+              },
             ),
             SizedBox(height: 3.h),
             Text(
@@ -449,7 +414,11 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                     shadows: const [
-                      Shadow(color: Colors.black54, offset: Offset(0, 1), blurRadius: 2),
+                      Shadow(
+                        color: Colors.black54,
+                        offset: Offset(0, 1),
+                        blurRadius: 2,
+                      ),
                     ],
                   ),
             ),
@@ -460,7 +429,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                   child: ComparisonCardWidget(
                     title: AppLocalizations.of(context)!.traditionalFarming,
                     value: _traditionalResults['profitabilityPercent'] ?? '0%',
-                    subtitle: AppLocalizations.of(context)!.currentProfitability,
+                    subtitle:
+                        AppLocalizations.of(context)!.currentProfitability,
                   ),
                 ),
                 SizedBox(width: 3.w),
@@ -468,7 +438,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                   child: ComparisonCardWidget(
                     title: AppLocalizations.of(context)!.comEffatha,
                     value: _effathaResults['profitabilityPercent'] ?? '0%',
-                    subtitle: AppLocalizations.of(context)!.enhancedProfitability,
+                    subtitle:
+                        AppLocalizations.of(context)!.enhancedProfitability,
                     isEffatha: false,
                     accentColor: AppTheme.successLight,
                   ),
@@ -482,7 +453,11 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                     shadows: const [
-                      Shadow(color: Colors.black54, offset: Offset(0, 1), blurRadius: 2),
+                      Shadow(
+                        color: Colors.black54,
+                        offset: Offset(0, 1),
+                        blurRadius: 2,
+                      ),
                     ],
                   ),
             ),
@@ -499,8 +474,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 _calculateResults();
               },
               hintText: AppLocalizations.of(context)!.enterArea,
-              onChanged: (v) {
-                setState(() => _area = v);
+              onChanged: (value) {
+                setState(() => _area = value);
                 _calculateResults();
               },
               inputFormatters: [
@@ -518,8 +493,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 _calculateResults();
               },
               hintText: AppLocalizations.of(context)!.enterProductivity,
-              onChanged: (v) {
-                setState(() => _historicalProductivity = v);
+              onChanged: (value) {
+                setState(() => _historicalProductivity = value);
                 _calculateResults();
               },
               inputFormatters: [
@@ -532,8 +507,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               value: _historicalCosts,
               unit: _costUnit,
               hintText: AppLocalizations.of(context)!.enterCostsPerArea,
-              onChanged: (v) {
-                setState(() => _historicalCosts = v);
+              onChanged: (value) {
+                setState(() => _historicalCosts = value);
                 _calculateResults();
               },
               units: const [r'$/ha', r'$/acre', 'sc/ha', 'sc/acre'],
@@ -551,8 +526,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               value: _cropPrice,
               unit: _priceUnit,
               hintText: AppLocalizations.of(context)!.enterPrice,
-              onChanged: (v) {
-                setState(() => _cropPrice = v);
+              onChanged: (value) {
+                setState(() => _cropPrice = value);
                 _calculateResults();
               },
               units: const [r'$/sc', r'$/kg', r'$/t'],
@@ -570,8 +545,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               value: _effathaInvestment,
               unit: _investmentUnit,
               hintText: AppLocalizations.of(context)!.enterInvestmentPerArea,
-              onChanged: (v) {
-                setState(() => _effathaInvestment = v);
+              onChanged: (value) {
+                setState(() => _effathaInvestment = value);
                 _calculateResults();
               },
               units: const [r'$/ha', r'$/acre', 'sc/ha', 'sc/acre'],
@@ -593,9 +568,10 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 setState(() => _additionalProductivityUnit = u);
                 _calculateResults();
               },
-              hintText: AppLocalizations.of(context)!.enterAdditionalProductivity,
-              onChanged: (v) {
-                setState(() => _additionalProductivity = v);
+              hintText:
+                  AppLocalizations.of(context)!.enterAdditionalProductivity,
+              onChanged: (value) {
+                setState(() => _additionalProductivity = value);
                 _calculateResults();
               },
               inputFormatters: [
@@ -604,7 +580,10 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             ),
 
             SizedBox(height: 3.h),
+
+            // ---------- CARD BRANCO: Resultados + Rentabilidade ----------
             _buildResultsWhiteCard(context),
+
             SizedBox(height: 10.h),
           ],
         ),
@@ -612,6 +591,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     );
   }
 
+  // Card branco com os campos do novo modelo + seção "Rentabilidade"
   Widget _buildResultsWhiteCard(BuildContext context) {
     final double tProfit = (_traditionalResults['profit'] as double?) ?? 0.0;
     final double eProfit = (_effathaResults['profit'] as double?) ?? 0.0;
@@ -623,7 +603,15 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     final double tCosts = (_traditionalResults['_totalCosts'] as double?) ?? 0;
     final double eCosts = (_effathaResults['_totalCosts'] as double?) ?? 0;
 
+    final double tPerc =
+        (_traditionalResults['_profitabilityRaw'] as double?) ?? 0.0;
+    final double ePerc =
+        (_effathaResults['_profitabilityRaw'] as double?) ?? 0.0;
+
+    // Diferença em R$ (Effatha - Padrão)
     final double diffProfitMoney = eProfit - tProfit;
+
+    // Lucro adicional (%) — modelo antigo
     final double additionalProfitPercent =
         tProfit.abs() > 0 ? ((eProfit - tProfit) / tProfit) * 100.0 : 0.0;
 
@@ -649,29 +637,42 @@ class _SimulationDashboardState extends State<SimulationDashboard>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Resultados',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w700)),
+          // Título atualizado
+          Text(
+            'Resultados',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
           SizedBox(height: 1.h),
-          _doubleRow(context,
-              label: 'Investimento Total',
-              left: _fmtMoney(tCosts),
-              right: _fmtMoney(eCosts)),
-          _doubleRow(context,
-              label: 'Produção Total',
-              left: prodToSc(tProdKg),
-              right: prodToSc(eProdKg)),
-          _doubleRow(context,
-              label: 'Rentabilidade Total (R\$)',
-              left: _fmtMoney(tProfit),
-              right: _fmtMoney(eProfit)),
-          _doubleRow(context,
-              label: 'Rentabilidade Total (%)',
-              left: _traditionalResults['profitabilityPercent'] ?? '0%',
-              right: _effathaResults['profitabilityPercent'] ?? '0%'),
-          SizedBox(height: 2.h),
+          _doubleRow(
+            context,
+            label: 'Investimento Total',
+            left: _fmtMoney(tCosts),
+            right: _fmtMoney(eCosts),
+          ),
+          _doubleRow(
+            context,
+            label: 'Produção Total',
+            left: prodToSc(tProdKg),
+            right: prodToSc(eProdKg),
+          ),
+          _doubleRow(
+            context,
+            label: 'Rentabilidade Total (R\$)',
+            left: _fmtMoney(tProfit),
+            right: _fmtMoney(eProfit),
+          ),
+          _doubleRow(
+            context,
+            label: 'Rentabilidade Total (%)',
+            left: _traditionalResults['profitabilityPercent'] ?? '0%',
+            right: _effathaResults['profitabilityPercent'] ?? '0%',
+          ),
+
+          SizedBox(height: 2.0.h),
+
+          // Seção de destaque: Rentabilidade
           Container(
             width: double.infinity,
             padding: EdgeInsets.all(3.5.w),
@@ -683,30 +684,40 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               ),
               borderRadius: BorderRadius.circular(12),
               boxShadow: const [
-                BoxShadow(color: Color(0x33000000), blurRadius: 10, offset: Offset(0, 4))
+                BoxShadow(
+                  color: Color(0x33000000),
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                )
               ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Rentabilidade',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(color: Colors.white, fontWeight: FontWeight.w800)),
+                Text(
+                  'Rentabilidade',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
                 SizedBox(height: 0.8.h),
                 Row(
                   children: [
                     Expanded(
-                      child: _highlightTile(context,
-                          title: 'Diferença (\$)',
-                          value: _fmtMoney(diffProfitMoney)),
+                      child: _highlightTile(
+                        context,
+                        title: 'Diferença (\$)',
+                        value: _fmtMoney(diffProfitMoney),
+                      ),
                     ),
                     SizedBox(width: 3.w),
                     Expanded(
-                      child: _highlightTile(context,
-                          title: 'Lucro adicional (%)',
-                          value: _fmtPercent(additionalProfitPercent, decimals: 2)),
+                      child: _highlightTile(
+                        context,
+                        title: 'Lucro adicional (%)',
+                        value: _fmtPercent(additionalProfitPercent, decimals: 2),
+                      ),
                     ),
                   ],
                 ),
@@ -731,16 +742,18 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Colors.white70,
-                    fontWeight: FontWeight.w600,
-                  )),
+              style: Theme.of(context)
+                  .textTheme
+                  .labelSmall
+                  ?.copyWith(color: Colors.white70, fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
-          Text(value,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  )),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
         ],
       ),
     );
@@ -756,11 +769,13 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('$label (Padrão Fazenda)',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: AppTheme.textSecondaryLight)),
+                Text(
+                  '$label (Padrão Fazenda)',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: AppTheme.textSecondaryLight),
+                ),
                 const SizedBox(height: 4),
                 Text(left, style: Theme.of(context).textTheme.bodyMedium),
               ],
@@ -771,11 +786,13 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('$label (Effatha)',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: AppTheme.textSecondaryLight)),
+                Text(
+                  '$label (Effatha)',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: AppTheme.textSecondaryLight),
+                ),
                 const SizedBox(height: 4),
                 Text(right, style: Theme.of(context).textTheme.bodyMedium),
               ],
@@ -786,9 +803,10 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     );
   }
 
-  // ---------- Settings ----------
+  // Settings e Profile (mantidos)
   Widget _buildSettingsTab() {
     final theme = Theme.of(context);
+
     return SingleChildScrollView(
       padding: EdgeInsets.all(4.w),
       child: Column(
@@ -800,7 +818,11 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               fontWeight: FontWeight.w700,
               color: Colors.white,
               shadows: const [
-                Shadow(color: Colors.black54, offset: Offset(0, 1), blurRadius: 2),
+                Shadow(
+                  color: Colors.black54,
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
+                ),
               ],
             ),
           ),
@@ -812,31 +834,50 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               color: Colors.white.withOpacity(0.9),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 2)),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
               ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(AppLocalizations.of(context)!.areaUnit,
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                Text(
+                  AppLocalizations.of(context)!.areaUnit,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 SizedBox(height: 2.h),
                 DropdownButtonFormField<String>(
                   value: _areaUnit,
-                  onChanged: (value) => setState(() => _areaUnit = value ?? 'hectares'),
+                  onChanged: (value) {
+                    setState(() {
+                      _areaUnit = value ?? 'hectares';
+                    });
+                  },
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.areaUnit,
                     border: const OutlineInputBorder(),
                   ),
                   items: [
-                    DropdownMenuItem(value: 'hectares', child: Text(AppLocalizations.of(context)!.hectares)),
-                    DropdownMenuItem(value: 'acres', child: Text(AppLocalizations.of(context)!.acres)),
-                    DropdownMenuItem(value: 'm²', child: Text(AppLocalizations.of(context)!.squareMeters)),
+                    DropdownMenuItem(
+                        value: 'hectares',
+                        child: Text(AppLocalizations.of(context)!.hectares)),
+                    DropdownMenuItem(
+                        value: 'acres',
+                        child: Text(AppLocalizations.of(context)!.acres)),
+                    DropdownMenuItem(
+                        value: 'm²',
+                        child: Text(AppLocalizations.of(context)!.squareMeters)),
                   ],
                 ),
                 SizedBox(height: 3.h),
                 ElevatedButton(
-                  onPressed: () => Navigator.pushNamed(context, '/settings-screen'),
+                  onPressed: () =>
+                      Navigator.pushNamed(context, '/settings-screen'),
                   child: Text(AppLocalizations.of(context)!.advancedSettings),
                 ),
               ],
@@ -847,49 +888,48 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     );
   }
 
-  // ---------- Profile ----------
-  Widget _buildProfileTab() {
+    Widget _buildProfileTab() {
     final theme = Theme.of(context);
 
-    Future<void> saveChanges() async {
-      final email = _emailCtrl.text.trim();
+    // Controladores locais (simples e suficientes para esta tela).
+    final nameCtrl = TextEditingController(text: 'Agricultural Professional');
+    final emailCtrl = TextEditingController(text: 'user@effatha.com');
+    final pwdCtrl = TextEditingController();
+    final pwd2Ctrl = TextEditingController();
+
+    void saveChanges() {
+      // Validação simples de e-mail e senha (quando informada)
+      final email = emailCtrl.text.trim();
       if (email.isEmpty || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Informe um e-mail válido.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Informe um e-mail válido.')),
+        );
         return;
       }
-      if (_pwdCtrl.text.isNotEmpty || _pwd2Ctrl.text.isNotEmpty) {
-        if (_pwdCtrl.text != _pwd2Ctrl.text) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('As senhas não conferem.')));
+      if (pwdCtrl.text.isNotEmpty || pwd2Ctrl.text.isNotEmpty) {
+        if (pwdCtrl.text != pwd2Ctrl.text) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('As senhas não conferem.')),
+          );
           return;
         }
-        if (_pwdCtrl.text.length < 6) {
+        if (pwdCtrl.text.length < 6) {
           ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('A senha deve ter pelo menos 6 caracteres.')));
+            const SnackBar(content: Text('A senha deve ter pelo menos 6 caracteres.')),
+          );
           return;
         }
       }
 
-      await UserPrefs.save(UserData(
-        name: _nameCtrl.text.trim(),
-        email: _emailCtrl.text.trim(),
-        photoUrl: _photoUrl,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Alterações salvas.')),
+      );
 
-      if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Alterações salvas.')));
-      _pwdCtrl.clear();
-      _pwd2Ctrl.clear();
+      // Limpa os campos de senha após salvar
+      pwdCtrl.clear();
+      pwd2Ctrl.clear();
       FocusScope.of(context).unfocus();
       setState(() {});
-    }
-
-    Future<void> doLogout() async {
-      await UserPrefs.clear();
-      if (!mounted) return;
-      Navigator.pushNamed(context, '/login-screen');
     }
 
     return SingleChildScrollView(
@@ -902,10 +942,14 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               color: Colors.white,
-              shadows: const [Shadow(color: Colors.black54, offset: Offset(0, 1), blurRadius: 2)],
+              shadows: const [
+                Shadow(color: Colors.black54, offset: Offset(0, 1), blurRadius: 2),
+              ],
             ),
           ),
           SizedBox(height: 3.h),
+
+          // Card principal do perfil
           Container(
             width: double.infinity,
             padding: EdgeInsets.all(4.w),
@@ -913,59 +957,83 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               color: Colors.white.withOpacity(0.90),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.10), blurRadius: 8, offset: const Offset(0, 2)),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.10),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
               ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Avatar + nome + e-mail atuais (preview)
                 Column(
                   children: [
                     CircleAvatar(
                       radius: 50,
                       backgroundColor: AppTheme.primaryLight,
-                      backgroundImage: (_photoUrl != null && _photoUrl!.isNotEmpty)
-                          ? NetworkImage(_photoUrl!)
-                          : null,
-                      child: (_photoUrl == null || _photoUrl!.isEmpty)
-                          ? const CustomIconWidget(iconName: 'person', color: Colors.white, size: 50)
-                          : null,
+                      child: const CustomIconWidget(
+                        iconName: 'person',
+                        color: Colors.white,
+                        size: 50,
+                      ),
                     ),
                     SizedBox(height: 1.5.h),
-                    Text(_nameCtrl.text.isEmpty ? '—' : _nameCtrl.text,
-                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                    Text(
+                      nameCtrl.text,
+                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                    ),
                     SizedBox(height: 0.5.h),
-                    Text(_emailCtrl.text.isEmpty ? '—' : _emailCtrl.text,
-                        style: theme.textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondaryLight)),
+                    Text(
+                      emailCtrl.text,
+                      style: theme.textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondaryLight),
+                    ),
                   ],
                 ),
+
                 SizedBox(height: 2.5.h),
+
+                // Campos de edição
                 TextField(
-                  controller: _nameCtrl,
-                  decoration: const InputDecoration(labelText: 'Nome', border: OutlineInputBorder()),
+                  controller: nameCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Nome',
+                    border: OutlineInputBorder(),
+                  ),
                   onChanged: (_) => setState(() {}),
                 ),
                 SizedBox(height: 1.5.h),
                 TextField(
-                  controller: _emailCtrl,
+                  controller: emailCtrl,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(),
+                  ),
                   onChanged: (_) => setState(() {}),
                 ),
                 SizedBox(height: 1.5.h),
+
+                // Troca de senha (opcional)
                 TextField(
-                  controller: _pwdCtrl,
+                  controller: pwdCtrl,
                   obscureText: true,
                   decoration: const InputDecoration(
-                      labelText: 'Nova senha (opcional)', border: OutlineInputBorder()),
+                    labelText: 'Nova senha (opcional)',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
                 SizedBox(height: 1.2.h),
                 TextField(
-                  controller: _pwd2Ctrl,
+                  controller: pwd2Ctrl,
                   obscureText: true,
-                  decoration:
-                      const InputDecoration(labelText: 'Confirmar nova senha', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                    labelText: 'Confirmar nova senha',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
+
                 SizedBox(height: 2.h),
                 Align(
                   alignment: Alignment.centerRight,
@@ -978,31 +1046,44 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                     child: const Text('Salvar Alterações'),
                   ),
                 ),
+
                 SizedBox(height: 2.h),
+
+                // Resumo (exibe as mesmas infos do card antigo)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const CustomIconWidget(
-                      iconName: 'analytics', color: AppTheme.primaryLight, size: 24),
+                    iconName: 'analytics',
+                    color: AppTheme.primaryLight,
+                    size: 24,
+                  ),
                   title: Text(AppLocalizations.of(context)!.simulationsRun),
                   trailing: const Text('24'),
                 ),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading:
-                      const CustomIconWidget(iconName: 'trending_up', color: AppTheme.successLight, size: 24),
+                  leading: const CustomIconWidget(
+                    iconName: 'trending_up',
+                    color: AppTheme.successLight,
+                    size: 24,
+                  ),
                   title: Text(AppLocalizations.of(context)!.averageROI),
                   trailing: const Text('18.5%'),
                 ),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const CustomIconWidget(
-                      iconName: 'agriculture', color: AppTheme.primaryLight, size: 24),
+                    iconName: 'agriculture',
+                    color: AppTheme.primaryLight,
+                    size: 24,
+                  ),
                   title: Text(AppLocalizations.of(context)!.preferredCrop),
                   trailing: Text(_selectedCrop.toUpperCase()),
                 ),
+
                 SizedBox(height: 1.5.h),
                 ElevatedButton(
-                  onPressed: doLogout,
+                  onPressed: () => Navigator.pushNamed(context, '/login-screen'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.errorLight,
                     foregroundColor: Colors.white,
