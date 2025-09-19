@@ -1,25 +1,47 @@
 import 'package:flutter/material.dart';
 
+/// Fundo padrão para a tela de login, com imagem (soja) e overlay em gradiente
+/// para manter legibilidade do conteúdo.
 class LoginBackgroundWidget extends StatelessWidget {
   final Widget child;
+
+  /// Opcional: trocar a imagem de fundo se desejar.
+  final String imageAsset;
+
+  /// Intensidade do escurecimento (0 = sem overlay, 1 = opaco).
+  final double overlayOpacity;
 
   const LoginBackgroundWidget({
     super.key,
     required this.child,
+    this.imageAsset = 'assets/images/bg_sim_soy.jpg',
+    this.overlayOpacity = 0.65,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Fallback SEM assets para evitar tela branca por erro de imagem
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF0D1217), Color(0xFF12202A)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage(imageAsset),
+          fit: BoxFit.cover,
         ),
       ),
-      child: SafeArea(child: child),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.black.withOpacity(overlayOpacity * 0.9),
+              Colors.black.withOpacity(overlayOpacity * 0.25),
+              Colors.black.withOpacity(overlayOpacity),
+            ],
+            stops: const [0.0, 0.40, 1.0],
+          ),
+        ),
+        child: SafeArea(child: child),
+      ),
     );
   }
 }
