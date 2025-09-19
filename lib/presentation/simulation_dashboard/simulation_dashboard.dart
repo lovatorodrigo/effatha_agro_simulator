@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:effatha_agro_simulator/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,7 +12,6 @@ import './widgets/comparison_card_widget.dart';
 import './widgets/crop_selector_widget.dart';
 import './widgets/input_card_widget.dart';
 import './widgets/profile_tab_widget.dart';
-
 
 class SimulationDashboard extends StatefulWidget {
   SimulationDashboard({super.key});
@@ -49,8 +49,9 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   Map<String, dynamic> _traditionalResults = {};
   Map<String, dynamic> _effathaResults = {};
 
-  // Backgrounds por cultura
-  final Map<String, String> _cropBackgrounds = {
+  /// Backgrounds por cultura
+  /// IMPORTANTE: Somente o LOGO é .png. Os fundos permanecem .jpg.
+  final Map<String, String> _cropBackgrounds = const {
     'soy': 'assets/images/bg_sim_soy.jpg',
     'corn': 'assets/images/bg_sim_corn.jpg',
     'cotton': 'assets/images/bg_sim_cotton.jpg',
@@ -249,28 +250,41 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    // Caminho do background atual
+    final String? bgPath = _cropBackgrounds[_selectedCrop];
+
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(_cropBackgrounds[_selectedCrop]!),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0x99000000),
-                Color(0x00000000),
-                Color(0x99000000),
-              ],
-              stops: [0.0, 0.3, 1.0],
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // === Fundo com fallback: NUNCA quebra a tela ===
+          if (bgPath != null)
+            Image.asset(
+              bgPath,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const _GradientFallback(),
+            )
+          else
+            const _GradientFallback(),
+
+          // Overlay de gradiente para legibilidade
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0x99000000),
+                  Color(0x00000000),
+                  Color(0x99000000),
+                ],
+                stops: [0.0, 0.3, 1.0],
+              ),
             ),
           ),
-          child: SafeArea(
+
+          // Conteúdo
+          SafeArea(
             child: Column(
               children: [
                 _buildAppBar(theme, isDark),
@@ -288,7 +302,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               ],
             ),
           ),
-        ),
+        ],
       ),
       floatingActionButton: _tabController.index == 0
           ? FloatingActionButton.extended(
@@ -329,11 +343,13 @@ class _SimulationDashboardState extends State<SimulationDashboard>
       padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
       child: Row(
         children: [
-          CustomImageWidget(
-            imageUrl: 'assets/images/logo_effatha.png',
-            width: 40,
-            height: 40,
-            fit: BoxFit.cover,
+          // Logo seguro (não quebra se faltar)
+          Image.asset(
+            'assets/images/logo_effatha.png', // LOGO em PNG
+            width: 56,
+            height: 56,
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
           ),
           SizedBox(width: 3.w),
           Expanded(
@@ -391,11 +407,12 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   Widget _buildDashboardTab() {
     return RefreshIndicator(
       onRefresh: () async {
-        await Future.delayed(const Duration(seconds: 1));
+        await Future.delayed(const Duration(milliseconds: 300));
         _calculateResults();
       },
       child: SingleChildScrollView(
         padding: EdgeInsets.all(4.w),
+        physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -716,7 +733,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                       child: _highlightTile(
                         context,
                         title: 'Lucro adicional (%)',
-                        value: _fmtPercent(additionalProfitPercent, decimals: 2),
+                        value:
+                            _fmtPercent(additionalProfitPercent, decimals: 2),
                       ),
                     ),
                   ],
@@ -871,7 +889,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                         child: Text(AppLocalizations.of(context)!.acres)),
                     DropdownMenuItem(
                         value: 'm²',
-                        child: Text(AppLocalizations.of(context)!.squareMeters)),
+                        child:
+                            Text(AppLocalizations.of(context)!.squareMeters)),
                   ],
                 ),
                 SizedBox(height: 3.h),
@@ -915,7 +934,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         }
         if (pwdCtrl.text.length < 6) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('A senha deve ter pelo menos 6 caracteres.')),
+            const SnackBar(
+                content: Text('A senha deve ter pelo menos 6 caracteres.')),
           );
           return;
         }
@@ -982,12 +1002,14 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                     SizedBox(height: 1.5.h),
                     Text(
                       nameCtrl.text,
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                      style: theme.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
                     ),
                     SizedBox(height: 0.5.h),
                     Text(
                       emailCtrl.text,
-                      style: theme.textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondaryLight),
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: AppTheme.textSecondaryLight),
                     ),
                   ],
                 ),
@@ -1083,7 +1105,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
                 SizedBox(height: 1.5.h),
                 ElevatedButton(
-                  onPressed: () => Navigator.pushNamed(context, '/login-screen'),
+                  onPressed: () =>
+                      Navigator.pushNamed(context, '/login-screen'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.errorLight,
                     foregroundColor: Colors.white,
@@ -1094,6 +1117,29 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ---------- Widgets auxiliares ----------
+
+class _GradientFallback extends StatelessWidget {
+  const _GradientFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    return const DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF0D3B24),
+            Color(0xFF0F5A2F),
+            Color(0xFF0D3B24),
+          ],
+        ),
       ),
     );
   }
