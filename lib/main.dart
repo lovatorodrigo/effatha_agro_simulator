@@ -10,12 +10,15 @@ import 'core/localization/locale_controller.dart';
 import 'package:effatha_agro_simulator/l10n/app_localizations.dart';
 import 'routes/app_routes.dart';
 
-/// LIGA/DESLIGA modo diagnóstico.
-/// true  -> força abrir uma tela simples (_BootProbe_) que testa rotas e assets.
-/// false -> aplica o fluxo normal do app (routes/initialRoute).
+/// MODO DIAGNÓSTICO:
+/// true  -> abre uma tela mínima (_BootProbe_) e NÃO usa initialRoute.
+/// false -> fluxo normal do app (routes + initialRoute).
 const bool kDiag = true;
 
-/// Provider simples para expor o LocaleController na árvore.
+/// SHA do commit (opcional). No Codemagic, passe:
+/// flutter build apk --debug --dart-define=GIT_SHA=$CM_COMMIT
+const String kGitSha = String.fromEnvironment('GIT_SHA', defaultValue: 'unknown');
+
 class _LocaleProvider extends InheritedNotifier<LocaleController> {
   const _LocaleProvider({
     required super.notifier,
@@ -46,14 +49,13 @@ Future<void> _bootstrap() async {
     );
   };
 
-  // Captura erros não tratados fora do Flutter (Dart)
+  // Captura erros fora do Flutter (Dart/native -> evita branco silencioso)
   PlatformDispatcher.instance.onError = (error, stack) {
     debugPrint('Uncaught error: $error');
     debugPrint('$stack');
-    return true; // já tratamos
+    return true; // tratado
   };
 
-  // Carrega locale salvo
   await LocaleController.instance.loadSavedLocale();
 }
 
@@ -61,11 +63,9 @@ void main() async {
   await runZonedGuarded<Future<void>>(
     () async {
       await _bootstrap();
-      final localeCtrl = LocaleController.instance;
-
       runApp(
         _LocaleProvider(
-          notifier: localeCtrl,
+          notifier: LocaleController.instance,
           child: const MyApp(),
         ),
       );
@@ -103,8 +103,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final localeCtrl = _LocaleProvider.of(context);
 
-    // Mostra um cartão de erro em vez de tela branca
-    ErrorWidget.builder = (FlutterErrorDetails details) {
+    // Em vez de branco, mostra cartão de erro com stacktrace
+    ErrorWidget.builder = (details) {
       return Material(
         color: Colors.white,
         child: SafeArea(
@@ -155,24 +155,16 @@ class MyApp extends StatelessWidget {
           ],
           supportedLocales: const [Locale('pt'), Locale('en')],
           locale: localeCtrl.locale,
-
           theme: lightTheme,
           darkTheme: darkTheme,
           themeMode: ThemeMode.system,
 
-          // MODO DIAGNÓSTICO: força abrir uma tela mínima
-          home: kDiag
-              ? _BootProbe(
-                  routes: routes,
-                  initialRoute: initial,
-                )
-              : null,
+          // DIAGNÓSTICO: tela mínima para testar rotas/assets
+          home: kDiag ? _BootProbe(routes: routes, initialRoute: initial) : null,
 
-          // Fluxo normal (quando kDiag = false)
+          // Fluxo normal (quando kDiag=false)
           routes: routes,
-          initialRoute: kDiag
-              ? null
-              : (hasInitial ? initial : _FallbackPage.routeName),
+          initialRoute: kDiag ? null : (hasInitial ? initial : _FallbackPage.routeName),
 
           onUnknownRoute: (settings) => MaterialPageRoute(
             builder: (_) => _FallbackPage(
@@ -186,7 +178,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-/// Tela mínima para diagnosticar rotas e assets (sem depender de login/assets).
 class _BootProbe extends StatefulWidget {
   final Map<String, WidgetBuilder> routes;
   final String initialRoute;
@@ -213,7 +204,6 @@ class _BootProbeState extends State<_BootProbe> {
   }
 
   Future<void> _runChecks() async {
-    // Verifica se initialRoute existe
     final hasInitial = widget.routes.containsKey(widget.initialRoute);
     setState(() {
       _routeStatus = hasInitial
@@ -221,12 +211,10 @@ class _BootProbeState extends State<_BootProbe> {
           : 'ERRO (rota não encontrada: ${widget.initialRoute})';
     });
 
-    // Testa assets críticos (ajuste os nomes se necessário)
     await _checkAsset('assets/images/logo_effatha.png',
         onOk: () => _logoStatus = 'OK',
         onErr: (e) => _logoStatus = 'ERRO: $e');
 
-    // Testa um background comum (troque a cultura se quiser)
     await _checkAsset('assets/images/bg_sim_soy.jpg',
         onOk: () => _bgStatus = 'OK',
         onErr: (e) => _bgStatus = 'ERRO: $e');
@@ -253,18 +241,15 @@ class _BootProbeState extends State<_BootProbe> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Diagnóstico de Inicialização'),
+        title: Text('Diagnóstico de Inicialização — SHA: $kGitSha'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: ListView(
           children: [
-            const Text(
-              'Status rápido',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            const Text('Status rápido',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-
             _statusTile('Rota inicial', _routeStatus),
             _statusTile('Asset: logo_effatha.png', _logoStatus),
             _statusTile('Asset: bg_sim_soy.jpg', _bgStatus),
@@ -274,20 +259,15 @@ class _BootProbeState extends State<_BootProbe> {
               icon: const Icon(Icons.play_arrow),
               label: Text('Abrir rota inicial: ${widget.initialRoute}'),
               onPressed: widget.routes.containsKey(widget.initialRoute)
-                  ? () {
-                      Navigator.of(context).pushNamed(widget.initialRoute);
-                    }
+                  ? () => Navigator.of(context).pushNamed(widget.initialRoute)
                   : null,
             ),
 
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 8),
-
-            const Text(
-              'Rotas registradas',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
+            const Text('Rotas registradas',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             ...routesList.map(
               (r) => ListTile(
@@ -306,9 +286,7 @@ class _BootProbeState extends State<_BootProbe> {
   Widget _statusTile(String label, String value) {
     final isOk = value.startsWith('OK');
     final isErr = value.startsWith('ERRO');
-    final color = isOk
-        ? Colors.green
-        : (isErr ? Colors.red : Colors.orange);
+    final color = isOk ? Colors.green : (isErr ? Colors.red : Colors.orange);
 
     return Row(
       children: [
@@ -332,7 +310,6 @@ class _BootProbeState extends State<_BootProbe> {
   }
 }
 
-/// Página fallback caso rota inicial/unknown falhe (usada quando kDiag=false).
 class _FallbackPage extends StatelessWidget {
   static const routeName = '/__fallback__';
   final String? message;
@@ -349,10 +326,7 @@ class _FallbackPage extends StatelessWidget {
         child: ListView(
           children: [
             if (message != null) ...[
-              Text(
-                message!,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
+              Text(message!, style: const TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 12),
             ],
             const Text('Rotas registradas:', style: TextStyle(fontSize: 16)),
