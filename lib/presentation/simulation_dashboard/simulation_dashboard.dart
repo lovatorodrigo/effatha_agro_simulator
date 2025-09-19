@@ -1108,7 +1108,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 SizedBox(height: 1.5.h),
                 ElevatedButton(
                   onPressed: () =>
-                      Navigator.pushNamed(context, '/login-screen'),
+                      Navigator.pushNamed(context, '/simulation-dashboard'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.errorLight,
                     foregroundColor: Colors.white,
