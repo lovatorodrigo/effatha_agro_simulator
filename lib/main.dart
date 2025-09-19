@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
@@ -8,6 +9,11 @@ import 'package:sizer/sizer.dart';
 import 'core/localization/locale_controller.dart';
 import 'package:effatha_agro_simulator/l10n/app_localizations.dart';
 import 'routes/app_routes.dart';
+
+/// LIGA/DESLIGA modo diagnóstico.
+/// true  -> força abrir uma tela simples (_BootProbe_) que testa rotas e assets.
+/// false -> aplica o fluxo normal do app (routes/initialRoute).
+const bool kDiag = true;
 
 /// Provider simples para expor o LocaleController na árvore.
 class _LocaleProvider extends InheritedNotifier<LocaleController> {
@@ -34,18 +40,20 @@ Future<void> _bootstrap() async {
   // Captura erros globais de Flutter (UI)
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.dumpErrorToConsole(details);
-    Zone.current.handleUncaughtError(details.exception, details.stack ?? StackTrace.empty);
+    Zone.current.handleUncaughtError(
+      details.exception,
+      details.stack ?? StackTrace.empty,
+    );
   };
 
   // Captura erros não tratados fora do Flutter (Dart)
   PlatformDispatcher.instance.onError = (error, stack) {
-    // Loga e evita que vire tela branca silenciosa
     debugPrint('Uncaught error: $error');
     debugPrint('$stack');
     return true; // já tratamos
   };
 
-  // Carrega locale salvo (síncrono com o que você já usava)
+  // Carrega locale salvo
   await LocaleController.instance.loadSavedLocale();
 }
 
@@ -53,7 +61,6 @@ void main() async {
   await runZonedGuarded<Future<void>>(
     () async {
       await _bootstrap();
-
       final localeCtrl = LocaleController.instance;
 
       runApp(
@@ -64,7 +71,6 @@ void main() async {
       );
     },
     (error, stack) {
-      // Qualquer erro que escapar cai aqui
       debugPrint('runZonedGuarded: $error');
       debugPrint('$stack');
     },
@@ -97,7 +103,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final localeCtrl = _LocaleProvider.of(context);
 
-    // Mostra um "cartão" vermelho nos lugares onde ocorreria tela branca.
+    // Mostra um cartão de erro em vez de tela branca
     ErrorWidget.builder = (FlutterErrorDetails details) {
       return Material(
         color: Colors.white,
@@ -134,10 +140,9 @@ class MyApp extends StatelessWidget {
 
     return Sizer(
       builder: (context, orientation, deviceType) {
-        // Verifica se a rota inicial realmente existe.
-        final String configuredInitial = AppRoutes.initial;
-        final Map<String, WidgetBuilder> routes = AppRoutes.routes;
-        final bool hasInitial = routes.containsKey(configuredInitial);
+        final routes = AppRoutes.routes;
+        final initial = AppRoutes.initial;
+        final hasInitial = routes.containsKey(initial);
 
         return MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -148,32 +153,186 @@ class MyApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: const [
-            Locale('pt'),
-            Locale('en'),
-          ],
+          supportedLocales: const [Locale('pt'), Locale('en')],
           locale: localeCtrl.locale,
+
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          themeMode: ThemeMode.system,
+
+          // MODO DIAGNÓSTICO: força abrir uma tela mínima
+          home: kDiag
+              ? _BootProbe(
+                  routes: routes,
+                  initialRoute: initial,
+                )
+              : null,
+
+          // Fluxo normal (quando kDiag = false)
           routes: routes,
-          // Se a rota inicial não existir, cai no FallbackPage em vez de tela branca
-          initialRoute: hasInitial ? configuredInitial : _FallbackPage.routeName,
+          initialRoute: kDiag
+              ? null
+              : (hasInitial ? initial : _FallbackPage.routeName),
+
           onUnknownRoute: (settings) => MaterialPageRoute(
             builder: (_) => _FallbackPage(
               message:
                   'Rota desconhecida: ${settings.name}\nConfira AppRoutes.routes e AppRoutes.initial.',
             ),
           ),
-          theme: lightTheme,
-          darkTheme: darkTheme,
-          themeMode: ThemeMode.system,
-          // (Opcional) Tela de transição inteligível para primeiro frame
-          builder: (context, child) => _FirstFrameGuard(child: child),
         );
       },
     );
   }
 }
 
-/// Página de fallback amigável caso a rota inicial/unknown falhe.
+/// Tela mínima para diagnosticar rotas e assets (sem depender de login/assets).
+class _BootProbe extends StatefulWidget {
+  final Map<String, WidgetBuilder> routes;
+  final String initialRoute;
+
+  const _BootProbe({
+    super.key,
+    required this.routes,
+    required this.initialRoute,
+  });
+
+  @override
+  State<_BootProbe> createState() => _BootProbeState();
+}
+
+class _BootProbeState extends State<_BootProbe> {
+  String _logoStatus = 'Pendente';
+  String _bgStatus = 'Pendente';
+  String _routeStatus = 'Pendente';
+
+  @override
+  void initState() {
+    super.initState();
+    _runChecks();
+  }
+
+  Future<void> _runChecks() async {
+    // Verifica se initialRoute existe
+    final hasInitial = widget.routes.containsKey(widget.initialRoute);
+    setState(() {
+      _routeStatus = hasInitial
+          ? 'OK (${widget.initialRoute})'
+          : 'ERRO (rota não encontrada: ${widget.initialRoute})';
+    });
+
+    // Testa assets críticos (ajuste os nomes se necessário)
+    await _checkAsset('assets/images/logo_effatha.png',
+        onOk: () => _logoStatus = 'OK',
+        onErr: (e) => _logoStatus = 'ERRO: $e');
+
+    // Testa um background comum (troque a cultura se quiser)
+    await _checkAsset('assets/images/bg_sim_soy.jpg',
+        onOk: () => _bgStatus = 'OK',
+        onErr: (e) => _bgStatus = 'ERRO: $e');
+
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _checkAsset(
+    String path, {
+    required void Function() onOk,
+    required void Function(Object e) onErr,
+  }) async {
+    try {
+      await rootBundle.load(path);
+      onOk();
+    } catch (e) {
+      onErr(e);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final routesList = widget.routes.keys.toList()..sort();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Diagnóstico de Inicialização'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: ListView(
+          children: [
+            const Text(
+              'Status rápido',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+
+            _statusTile('Rota inicial', _routeStatus),
+            _statusTile('Asset: logo_effatha.png', _logoStatus),
+            _statusTile('Asset: bg_sim_soy.jpg', _bgStatus),
+
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.play_arrow),
+              label: Text('Abrir rota inicial: ${widget.initialRoute}'),
+              onPressed: widget.routes.containsKey(widget.initialRoute)
+                  ? () {
+                      Navigator.of(context).pushNamed(widget.initialRoute);
+                    }
+                  : null,
+            ),
+
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 8),
+
+            const Text(
+              'Rotas registradas',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            ...routesList.map(
+              (r) => ListTile(
+                dense: true,
+                title: Text(r),
+                trailing: const Icon(Icons.open_in_new),
+                onTap: () => Navigator.of(context).pushNamed(r),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _statusTile(String label, String value) {
+    final isOk = value.startsWith('OK');
+    final isErr = value.startsWith('ERRO');
+    final color = isOk
+        ? Colors.green
+        : (isErr ? Colors.red : Colors.orange);
+
+    return Row(
+      children: [
+        Icon(isOk ? Icons.check_circle : Icons.error_outline, color: color),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: '$label: ',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                TextSpan(text: value),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Página fallback caso rota inicial/unknown falhe (usada quando kDiag=false).
 class _FallbackPage extends StatelessWidget {
   static const routeName = '/__fallback__';
   final String? message;
@@ -210,54 +369,5 @@ class _FallbackPage extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-/// Evita tela branca no primeiro frame e tenta pré-carregar o logo.
-/// Se o asset estiver faltando, apenas loga (não quebra a UI).
-class _FirstFrameGuard extends StatefulWidget {
-  final Widget? child;
-  const _FirstFrameGuard({required this.child});
-
-  @override
-  State<_FirstFrameGuard> createState() => _FirstFrameGuardState();
-}
-
-class _FirstFrameGuardState extends State<_FirstFrameGuard> {
-  bool _ready = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _prepare();
-  }
-
-  Future<void> _prepare() async {
-    try {
-      // Tenta pré-carregar o logo (ajuste o caminho se mudar de PNG/JPG)
-      await precacheImage(const AssetImage('assets/images/logo_effatha.png'), context)
-          .catchError((e, s) {
-        debugPrint('Logo não pôde ser pré-carregado: $e');
-      });
-    } catch (e, s) {
-      debugPrint('Erro no preload do logo: $e');
-      debugPrint('$s');
-    } finally {
-      if (mounted) {
-        setState(() => _ready = true);
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!_ready) {
-      return const Material(
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-    return widget.child ?? const SizedBox.shrink();
   }
 }
