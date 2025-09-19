@@ -12,8 +12,8 @@ import './widgets/crop_selector_widget.dart';
 import './widgets/input_card_widget.dart';
 import './widgets/profile_tab_widget.dart';
 
-// >>> IMPORTA O USERPREFS (novo utilitário simples)
-import 'package:effatha_agro_simulator/services/user_prefs.dart';
+// >>> importa o UserPrefs no caminho certo (services fica dentro de presentation)
+import 'package:effatha_agro_simulator/presentation/services/user_prefs.dart';
 
 class SimulationDashboard extends StatefulWidget {
   SimulationDashboard({super.key});
@@ -73,16 +73,15 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   void initState() {
     _loadKgPerSack();
     super.initState();
-
     _tabController = TabController(length: 3, vsync: this);
 
-    // Inicializa controllers (valores default – serão sobrescritos pelo _loadUserFromPrefs)
+    // Inicializa controllers com valores padrão (serão sobrescritos pelo _loadUserFromPrefs)
     _nameCtrl = TextEditingController(text: 'Agricultural Professional');
     _emailCtrl = TextEditingController(text: 'user@effatha.com');
     _pwdCtrl = TextEditingController();
     _pwd2Ctrl = TextEditingController();
 
-    _loadUserFromPrefs(); // carrega nome/email/photo se existirem
+    _loadUserFromPrefs(); // carrega nome/email/foto do usuário salvo
     _calculateResults();
   }
 
@@ -139,7 +138,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   @override
   void dispose() {
     _tabController.dispose();
-    // libera controllers
     _nameCtrl.dispose();
     _emailCtrl.dispose();
     _pwdCtrl.dispose();
@@ -1061,7 +1059,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 ),
                 SizedBox(height: 1.5.h),
 
-                // Troca de senha (opcional - só local para validação de exemplo)
+                // Troca de senha (opcional - local para validação de exemplo)
                 TextField(
                   controller: _pwdCtrl,
                   obscureText: true,
