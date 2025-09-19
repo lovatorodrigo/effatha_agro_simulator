@@ -9,6 +9,9 @@ import './widgets/login_form_widget.dart';
 import './widgets/login_header_widget.dart';
 import './widgets/social_login_widget.dart';
 
+// >>> novo: prefs simples do usuário
+import 'package:effatha_agro_simulator/presentation/services/user_prefs.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -63,8 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     AppTheme.errorLight.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: AppTheme.errorLight
-                                      .withOpacity(0.3),
+                                  color: AppTheme.errorLight,
                                   width: 1.0,
                                 ),
                               ),
@@ -112,7 +114,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  // Bottom Spacing
                   SizedBox(height: 2.h),
                 ],
               ),
@@ -136,6 +137,11 @@ class _LoginScreenState extends State<LoginScreen> {
       // Check mock credentials
       if (_mockCredentials.containsKey(email.toLowerCase()) &&
           _mockCredentials[email.toLowerCase()] == password) {
+
+        // >>> persiste usuário simples
+        final name = email.split('@').first;
+        await UserPrefs.save(UserData(name: name, email: email));
+
         // Success - trigger haptic feedback
         HapticFeedback.lightImpact();
 
@@ -152,10 +158,8 @@ class _LoginScreenState extends State<LoginScreen> {
         HapticFeedback.mediumImpact();
       }
     } catch (e) {
-      // Network or other error
       setState(() {
-        _errorMessage =
-            'Unable to sign in. Please check your internet connection and try again.';
+        _errorMessage = 'An error occurred. Please try again.';
       });
       HapticFeedback.mediumImpact();
     } finally {
@@ -176,6 +180,13 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       // Simulate Google Sign-In process
       await Future.delayed(const Duration(milliseconds: 2000));
+
+      // >>> enquanto for simulado (sem plugin), salva um usuário genérico
+      await UserPrefs.save(const UserData(
+        name: 'Google User',
+        email: 'google.user@example.com',
+        // photoUrl: 'https://...' // se quiser, adicione uma URL
+      ));
 
       // Success - trigger haptic feedback
       HapticFeedback.lightImpact();
@@ -207,6 +218,12 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       // Simulate Apple Sign-In process
       await Future.delayed(const Duration(milliseconds: 2000));
+
+      // >>> enquanto for simulado
+      await UserPrefs.save(const UserData(
+        name: 'Apple User',
+        email: 'apple.user@example.com',
+      ));
 
       // Success - trigger haptic feedback
       HapticFeedback.lightImpact();
