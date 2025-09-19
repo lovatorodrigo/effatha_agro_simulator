@@ -1,10 +1,6 @@
-import 'package:effatha_agro_simulator/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
-
 import '../../../core/app_export.dart';
-import '../../../theme/app_theme.dart';
-import '../../../widgets/effatha_logo_widget.dart';
 
 class LoginHeaderWidget extends StatelessWidget {
   const LoginHeaderWidget({super.key});
@@ -12,61 +8,49 @@ class LoginHeaderWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 5.w),
+    return Padding(
+      padding: EdgeInsets.only(top: 6.h, left: 5.w, right: 5.w, bottom: 2.h),
       child: Column(
         children: [
-          SizedBox(height: 4.h),
-
-          // Effatha Logo - Updated to use actual asset
-          const EffathaLogoWidget.large(
-            heroTag: 'effatha-logo',
+          // LOGO RESPONSIVO – ocupa até ~80% da largura (máx. 520 px)
+          LayoutBuilder(
+            builder: (ctx, c) {
+              final w = c.maxWidth;
+              final target = w * 0.8;
+              final logoWidth = target.clamp(240.0, 520.0);
+              return Image.asset(
+                'assets/images/logo_effatha.png',
+                width: logoWidth,
+                fit: BoxFit.contain,
+              );
+            },
           ),
-
-          SizedBox(height: 3.h),
-
-          // Welcome Text
+          SizedBox(height: 2.0.h),
           Text(
-            'Bem-vindo',
-            style: theme.textTheme.headlineMedium?.copyWith(
-              color: AppTheme.surfaceLight,
-              fontWeight: FontWeight.bold,
-              fontSize: 28,
-              shadows: [
+            'Effatha Agro Simulator',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.2,
+              shadows: const [
                 Shadow(
-                  color: Colors.black.withOpacity(0.8),
-                  offset: const Offset(0, 2),
-                  blurRadius: 4.0,
+                  color: Colors.black45,
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
                 ),
               ],
             ),
-            textAlign: TextAlign.center,
           ),
-
-          SizedBox(height: 1.h),
-
-          // Subtitle
+          SizedBox(height: 0.4.h),
           Text(
-            'Sign in to access your agricultural profitability simulator',
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: AppTheme.surfaceLight.withOpacity(0.9),
-              fontSize: 16,
-              height: 1.4,
-              shadows: [
-                Shadow(
-                  color: Colors.black.withOpacity(0.8),
-                  offset: const Offset(0, 1),
-                  blurRadius: 2.0,
-                ),
-              ],
-            ),
+            'Faça login para continuar',
             textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: Colors.white.withOpacity(0.9),
+            ),
           ),
-
-          SizedBox(height: 4.h),
         ],
       ),
     );
