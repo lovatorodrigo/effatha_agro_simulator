@@ -10,7 +10,6 @@ import '../export_results_screen/export_results_screen.dart';
 import './widgets/comparison_card_widget.dart';
 import './widgets/crop_selector_widget.dart';
 import './widgets/input_card_widget.dart';
-// Mantive o import do profile_tab_widget se você ainda precisar dele em outro lugar.
 // ignore: unused_import
 import './widgets/profile_tab_widget.dart';
 
@@ -72,15 +71,18 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
   @override
   void initState() {
-    _loadKgPerSack();
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    super.initState(); // importante vir primeiro
+    _tabController = TabController(length: 3, vsync: this)
+      ..addListener(() {
+        if (mounted) setState(() {}); // atualiza FAB ao trocar de aba
+      });
 
     _nameCtrl = TextEditingController(text: 'Agricultural Professional');
     _emailCtrl = TextEditingController(text: 'user@effatha.com');
     _pwdCtrl = TextEditingController();
     _pwd2Ctrl = TextEditingController();
 
+    _loadKgPerSack();
     _loadUserFromPrefs();
     _calculateResults();
   }
@@ -101,7 +103,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     try {
       final prefs = await SharedPreferences.getInstance();
       final k = prefs.getDouble('kg_per_sack_weight');
-      if (k != null && k > 0) {
+      if (k != null && k > 0 && mounted) {
         setState(() => _kgPerSackWeight = k);
       }
     } catch (_) {}
@@ -230,6 +232,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         ? (additionalProfit / effathaInvestmentTotal) * 100.0
         : 0.0;
 
+    if (!mounted) return;
     setState(() {
       _traditionalResults = {
         'investmentTotal': _fmtMoney(traditionalTotalCosts),
@@ -264,24 +267,44 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    // caminho do background (com fallback)
+    final bgPath = _cropBackgrounds[_selectedCrop] ??
+        'assets/images/bg_sim_soy.jpg';
+
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(_cropBackgrounds[_selectedCrop]!),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0x99000000), Color(0x00000000), Color(0x99000000)],
-              stops: [0.0, 0.3, 1.0],
+      body: Stack(
+        children: [
+          // BACKGROUND resiliente (não quebra se o asset faltar)
+          Positioned.fill(
+            child: Image.asset(
+              bgPath,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF6A994E), Color(0xFF386641)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+              ),
             ),
           ),
-          child: SafeArea(
+          // GRADIENT overlay
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0x99000000), Color(0x00000000), Color(0x99000000)],
+                  stops: [0.0, 0.3, 1.0],
+                ),
+              ),
+            ),
+          ),
+          // CONTEÚDO
+          SafeArea(
             child: Column(
               children: [
                 _buildAppBar(theme, isDark),
@@ -299,7 +322,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               ],
             ),
           ),
-        ),
+        ],
       ),
       floatingActionButton: _tabController.index == 0
           ? FloatingActionButton.extended(
@@ -335,19 +358,18 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     );
   }
 
-  // ---------- APP BAR com LOGO MAIOR e padronização visual ----------
+  // ---------- APP BAR ----------
   Widget _buildAppBar(ThemeData theme, bool isDark) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
       child: Row(
         children: [
-          // Logo maior e responsivo (até 64px de altura)
           ConstrainedBox(
             constraints: const BoxConstraints(maxHeight: 64, maxWidth: 64),
-            child: Image.asset(
-              'assets/images/logo_effatha.png',
-              fit: BoxFit.contain,
-            ),
+            child: Image.asset('assets/images/logo_effatha.png',
+                fit: BoxFit.contain, errorBuilder: (_, __, ___) {
+              return const SizedBox(width: 48, height: 48);
+            }),
           ),
           SizedBox(width: 3.w),
           Expanded(
@@ -389,7 +411,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         borderRadius: BorderRadius.circular(14),
       ),
       child: TabBar(
-        controller: _tabController, // <<<<<< CORREÇÃO AQUI
+        controller: _tabController,
         tabs: const [
           Tab(text: 'Dashboard'),
           Tab(text: 'Settings'),
@@ -855,6 +877,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         photoUrl: _photoUrl,
       ));
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Alterações salvas.')));
       _pwdCtrl.clear();
