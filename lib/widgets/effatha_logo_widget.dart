@@ -69,7 +69,7 @@ class EffathaLogoWidget extends StatelessWidget {
     final double logoHeight = height ?? (showContainer ? targetSize : 24.0);
 
     // Single asset path (ajuste o nome se necessário)
-    final String assetPath = 'assets/images/logo_effatha-1757471503560.png';
+    final String assetPath = 'assets/images/logo_effatha.png';
 
     Widget logoImage = ConstrainedBox(
       constraints: BoxConstraints(
