@@ -888,7 +888,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     );
   }
 
-    Widget _buildProfileTab() {
+  Widget _buildProfileTab() {
     final theme = Theme.of(context);
 
     // Controladores locais (simples e suficientes para esta tela).
