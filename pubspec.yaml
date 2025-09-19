@@ -39,6 +39,7 @@ dependencies:
   connectivity_plus: any
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.13.1
   flutter_test:
     sdk: flutter
   flutter_lints: any
@@ -50,3 +51,20 @@ flutter:
   assets:
     - assets/
     - assets/images/
+
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+
+  image_path: assets/app_icon/icon.png
+
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: assets/app_icon/icon.png
+
+  android_12:
+    icon_background_color: "#FFFFFF"
+    icon_foreground: assets/app_icon/icon.png
+
+  adaptive_icon_monochrome: assets/app_icon/icon.png
+
