@@ -388,11 +388,10 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         color: Colors.white.withOpacity(0.12),
         borderRadius: BorderRadius.circular(14),
       ),
-      child: const TabBar(
-        tabs: [
+      child: TabBar(
+        controller: _tabController, // <<<<<< CORREÇÃO AQUI
+        tabs: const [
           Tab(text: 'Dashboard'),
-        //  Tab(text: 'Settings'), // mantém as três abas — comentadas para referência
-        //  Tab(text: 'Profile'),
           Tab(text: 'Settings'),
           Tab(text: 'Profile'),
         ],
