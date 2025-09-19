@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:effatha_agro_simulator/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -49,9 +48,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   Map<String, dynamic> _traditionalResults = {};
   Map<String, dynamic> _effathaResults = {};
 
-  /// Backgrounds por cultura
-  /// IMPORTANTE: Somente o LOGO é .png. Os fundos permanecem .jpg.
-  final Map<String, String> _cropBackgrounds = const {
+  // Backgrounds por cultura
+  final Map<String, String> _cropBackgrounds = {
     'soy': 'assets/images/bg_sim_soy.jpg',
     'corn': 'assets/images/bg_sim_corn.jpg',
     'cotton': 'assets/images/bg_sim_cotton.jpg',
@@ -116,7 +114,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   // Cálculos
   void _calculateResults() {
     final double area = double.tryParse(_area) ?? 0.0;
-    final double productivity = double.tryParse(_historicalProductivity) ?? 0.0;
+    final double productivity =
+        double.tryParse(_historicalProductivity) ?? 0.0;
     final double costs = double.tryParse(_historicalCosts) ?? 0.0;
     final double price = double.tryParse(_cropPrice) ?? 0.0;
     final double investment = double.tryParse(_effathaInvestment) ?? 0.0;
@@ -140,7 +139,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         break;
       case r'$/sc': // saca
       default:
-        pricePerKg = _kgPerSackWeight > 0 ? (price / _kgPerSackWeight) : 0.0;
+        pricePerKg =
+            _kgPerSackWeight > 0 ? (price / _kgPerSackWeight) : 0.0;
         break;
     }
 
@@ -250,41 +250,28 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // Caminho do background atual
-    final String? bgPath = _cropBackgrounds[_selectedCrop];
-
     return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // === Fundo com fallback: NUNCA quebra a tela ===
-          if (bgPath != null)
-            Image.asset(
-              bgPath,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const _GradientFallback(),
-            )
-          else
-            const _GradientFallback(),
-
-          // Overlay de gradiente para legibilidade
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0x99000000),
-                  Color(0x00000000),
-                  Color(0x99000000),
-                ],
-                stops: [0.0, 0.3, 1.0],
-              ),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage(_cropBackgrounds[_selectedCrop]!),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0x99000000),
+                Color(0x00000000),
+                Color(0x99000000),
+              ],
+              stops: [0.0, 0.3, 1.0],
             ),
           ),
-
-          // Conteúdo
-          SafeArea(
+          child: SafeArea(
             child: Column(
               children: [
                 _buildAppBar(theme, isDark),
@@ -302,7 +289,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               ],
             ),
           ),
-        ],
+        ),
       ),
       floatingActionButton: _tabController.index == 0
           ? FloatingActionButton.extended(
@@ -343,13 +330,11 @@ class _SimulationDashboardState extends State<SimulationDashboard>
       padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
       child: Row(
         children: [
-          // Logo seguro (não quebra se faltar)
-          Image.asset(
-            'assets/images/logo_effatha.png', // LOGO em PNG
-            width: 56,
-            height: 56,
-            fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+          CustomImageWidget(
+            imageUrl: 'assets/images/logo_effatha.png',
+            width: 40,
+            height: 40,
+            fit: BoxFit.cover,
           ),
           SizedBox(width: 3.w),
           Expanded(
@@ -407,12 +392,11 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   Widget _buildDashboardTab() {
     return RefreshIndicator(
       onRefresh: () async {
-        await Future.delayed(const Duration(milliseconds: 300));
+        await Future.delayed(const Duration(seconds: 1));
         _calculateResults();
       },
       child: SingleChildScrollView(
         padding: EdgeInsets.all(4.w),
-        physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -445,7 +429,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 Expanded(
                   child: ComparisonCardWidget(
                     title: AppLocalizations.of(context)!.traditionalFarming,
-                    value: _traditionalResults['profitabilityPercent'] ?? '0%',
+                    value:
+                        _traditionalResults['profitabilityPercent'] ?? '0%',
                     subtitle:
                         AppLocalizations.of(context)!.currentProfitability,
                   ),
@@ -561,7 +546,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               title: AppLocalizations.of(context)!.effathaInvestmentCost,
               value: _effathaInvestment,
               unit: _investmentUnit,
-              hintText: AppLocalizations.of(context)!.enterInvestmentPerArea,
+              hintText:
+                  AppLocalizations.of(context)!.enterInvestmentPerArea,
               onChanged: (value) {
                 setState(() => _effathaInvestment = value);
                 _calculateResults();
@@ -585,8 +571,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 setState(() => _additionalProductivityUnit = u);
                 _calculateResults();
               },
-              hintText:
-                  AppLocalizations.of(context)!.enterAdditionalProductivity,
+              hintText: AppLocalizations.of(context)!
+                  .enterAdditionalProductivity,
               onChanged: (value) {
                 setState(() => _additionalProductivity = value);
                 _calculateResults();
@@ -615,10 +601,13 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
     final double tProdKg =
         (_traditionalResults['_productionKg'] as double?) ?? 0;
-    final double eProdKg = (_effathaResults['_productionKg'] as double?) ?? 0;
+    final double eProdKg =
+        (_effathaResults['_productionKg'] as double?) ?? 0;
 
-    final double tCosts = (_traditionalResults['_totalCosts'] as double?) ?? 0;
-    final double eCosts = (_effathaResults['_totalCosts'] as double?) ?? 0;
+    final double tCosts =
+        (_traditionalResults['_totalCosts'] as double?) ?? 0;
+    final double eCosts =
+        (_effathaResults['_totalCosts'] as double?) ?? 0;
 
     final double tPerc =
         (_traditionalResults['_profitabilityRaw'] as double?) ?? 0.0;
@@ -686,7 +675,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             left: _traditionalResults['profitabilityPercent'] ?? '0%',
             right: _effathaResults['profitabilityPercent'] ?? '0%',
           ),
-
           SizedBox(height: 2.0.h),
 
           // Seção de destaque: Rentabilidade
@@ -713,10 +701,11 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               children: [
                 Text(
                   'Rentabilidade',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                      ),
+                  style:
+                      Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
                 ),
                 SizedBox(height: 0.8.h),
                 Row(
@@ -733,8 +722,9 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                       child: _highlightTile(
                         context,
                         title: 'Lucro adicional (%)',
-                        value:
-                            _fmtPercent(additionalProfitPercent, decimals: 2),
+                        value: _fmtPercent(
+                            additionalProfitPercent,
+                            decimals: 2),
                       ),
                     ),
                   ],
@@ -759,11 +749,14 @@ class _SimulationDashboardState extends State<SimulationDashboard>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelSmall
-                  ?.copyWith(color: Colors.white70, fontWeight: FontWeight.w600)),
+          Text(
+            title,
+            style: Theme.of(context)
+                .textTheme
+                .labelSmall
+                ?.copyWith(
+                    color: Colors.white70, fontWeight: FontWeight.w600),
+          ),
           const SizedBox(height: 4),
           Text(
             value,
@@ -882,22 +875,26 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                   ),
                   items: [
                     DropdownMenuItem(
-                        value: 'hectares',
-                        child: Text(AppLocalizations.of(context)!.hectares)),
+                      value: 'hectares',
+                      child: Text(AppLocalizations.of(context)!.hectares),
+                    ),
                     DropdownMenuItem(
-                        value: 'acres',
-                        child: Text(AppLocalizations.of(context)!.acres)),
+                      value: 'acres',
+                      child: Text(AppLocalizations.of(context)!.acres),
+                    ),
                     DropdownMenuItem(
-                        value: 'm²',
-                        child:
-                            Text(AppLocalizations.of(context)!.squareMeters)),
+                      value: 'm²',
+                      child:
+                          Text(AppLocalizations.of(context)!.squareMeters),
+                    ),
                   ],
                 ),
                 SizedBox(height: 3.h),
                 ElevatedButton(
                   onPressed: () =>
                       Navigator.pushNamed(context, '/settings-screen'),
-                  child: Text(AppLocalizations.of(context)!.advancedSettings),
+                  child:
+                      Text(AppLocalizations.of(context)!.advancedSettings),
                 ),
               ],
             ),
@@ -911,7 +908,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     final theme = Theme.of(context);
 
     // Controladores locais (simples e suficientes para esta tela).
-    final nameCtrl = TextEditingController(text: 'Agricultural Professional');
+    final nameCtrl =
+        TextEditingController(text: 'Agricultural Professional');
     final emailCtrl = TextEditingController(text: 'user@effatha.com');
     final pwdCtrl = TextEditingController();
     final pwd2Ctrl = TextEditingController();
@@ -919,7 +917,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     void saveChanges() {
       // Validação simples de e-mail e senha (quando informada)
       final email = emailCtrl.text.trim();
-      if (email.isEmpty || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+      if (email.isEmpty ||
+          !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Informe um e-mail válido.')),
         );
@@ -963,7 +962,10 @@ class _SimulationDashboardState extends State<SimulationDashboard>
               fontWeight: FontWeight.w700,
               color: Colors.white,
               shadows: const [
-                Shadow(color: Colors.black54, offset: Offset(0, 1), blurRadius: 2),
+                Shadow(
+                    color: Colors.black54,
+                    offset: Offset(0, 1),
+                    blurRadius: 2),
               ],
             ),
           ),
@@ -1008,8 +1010,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                     SizedBox(height: 0.5.h),
                     Text(
                       emailCtrl.text,
-                      style: theme.textTheme.bodyMedium
-                          ?.copyWith(color: AppTheme.textSecondaryLight),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.textSecondaryLight),
                     ),
                   ],
                 ),
@@ -1117,29 +1119,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// ---------- Widgets auxiliares ----------
-
-class _GradientFallback extends StatelessWidget {
-  const _GradientFallback();
-
-  @override
-  Widget build(BuildContext context) {
-    return const DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF0D3B24),
-            Color(0xFF0F5A2F),
-            Color(0xFF0D3B24),
-          ],
-        ),
       ),
     );
   }
